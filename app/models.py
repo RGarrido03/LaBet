@@ -29,8 +29,12 @@ class Team(models.Model):
 
 class Game(models.Model):
     id = models.AutoField(primary_key=True)
-    home_team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    away_team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    home_team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name="home_team"
+    )
+    away_team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name="away_team"
+    )
     date = models.DateTimeField()
 
     home_score = models.IntegerField()
@@ -59,13 +63,19 @@ class Bet(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
 
-    home_bet_house = models.ForeignKey(BetHouse, on_delete=models.CASCADE)
+    home_bet_house = models.ForeignKey(
+        BetHouse, on_delete=models.CASCADE, related_name="home_bet_house"
+    )
     home_odd = models.DecimalField(max_digits=10, decimal_places=2)
 
-    draw_bet_house = models.ForeignKey(BetHouse, on_delete=models.CASCADE, null=True)
+    draw_bet_house = models.ForeignKey(
+        BetHouse, on_delete=models.CASCADE, related_name="draw_bet_house", null=True
+    )
     draw_odd = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
-    away_bet_house = models.ForeignKey(BetHouse, on_delete=models.CASCADE)
+    away_bet_house = models.ForeignKey(
+        BetHouse, on_delete=models.CASCADE, related_name="away_bet_house"
+    )
     away_odd = models.DecimalField(max_digits=10, decimal_places=2)
 
     amount = models.DecimalField(max_digits=10, decimal_places=2)
