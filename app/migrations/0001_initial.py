@@ -227,7 +227,7 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name="GameOdds",
+            name="GameOdd",
             fields=[
                 (
                     "id",

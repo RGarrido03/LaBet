@@ -48,7 +48,7 @@ class BetHouse(models.Model):
     website = models.URLField()
 
 
-class GameOdds(models.Model):
+class GameOdd(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     bet_house = models.ForeignKey(BetHouse, on_delete=models.CASCADE)
     home_odd = models.DecimalField(max_digits=10, decimal_places=2)
