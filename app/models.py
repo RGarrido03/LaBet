@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User as BaseUser
+from django.contrib.auth.models import AbstractUser
 
 
 class Tier(models.Model):
@@ -8,10 +8,10 @@ class Tier(models.Model):
     description = models.TextField()
 
 
-class User(BaseUser):
-    tier = models.ForeignKey(Tier, on_delete=models.CASCADE)
-    birth_date = models.DateField()
-    iban = models.CharField(max_length=34)
+class User(AbstractUser):
+    tier = models.ForeignKey(Tier, on_delete=models.CASCADE, null=True)
+    birth_date = models.DateField(null=True)
+    iban = models.CharField(max_length=34, null=True)
 
 
 class Sport(models.Model):
@@ -48,8 +48,7 @@ class BetHouse(models.Model):
     website = models.URLField()
 
 
-# GameOdds
-class Game_BetHouse(models.Model):
+class GameOdds(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     bet_house = models.ForeignKey(BetHouse, on_delete=models.CASCADE)
     home_odd = models.DecimalField(max_digits=10, decimal_places=2)
