@@ -23,7 +23,7 @@ class BetclicScrapper:
         self.bet_house = self.get_or_create_bet_house()
         self.logger =logging.getLogger(__name__)
         # add a file handler
-         self.logger.addHandler(logging.FileHandler(settings.LOG_FILE))
+        self.logger.addHandler(logging.FileHandler(settings.LOG_FILE))
 
     def get_or_create_bet_house(self) -> BetHouse:
         """Retrieve or create the Betclic BetHouse object."""
