@@ -38,8 +38,8 @@ class Game(models.Model):
     )
     date = models.DateTimeField()
 
-    home_score = models.IntegerField()
-    away_score = models.IntegerField()
+    home_score = models.IntegerField(null=True)
+    away_score = models.IntegerField(null=True)
 
 
 class BetHouse(models.Model):
