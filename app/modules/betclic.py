@@ -9,21 +9,19 @@ from django.conf import settings
 from unidecode import unidecode
 
 from app.models import BetHouse, Game, Team, GameOdd
+from app.modules.scrapper import Scrapper
 
 
-
-class BetclicScrapper:
+class BetclicScrapper(Scrapper):
     def __init__(
         self,
-        url: str = "https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit=5&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate",
+        url: str = "https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit=50&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate",
     ):
+        super().__init__()
         self.url = url
         self.data: Optional[dict] = None
         self.parsed_data: list[GameOdd] = []
         self.bet_house = self.get_or_create_bet_house()
-        self.logger = logging.getLogger(__name__)
-        # add a file handler
-        self.logger.addHandler(logging.FileHandler(settings.LOG_FILE))
 
     def get_or_create_bet_house(self) -> BetHouse:
         """Retrieve or create the Betclic BetHouse object."""
