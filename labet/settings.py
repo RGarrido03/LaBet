@@ -131,3 +131,5 @@ AUTH_USER_MODEL = "app.User"
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
+
+LOG_FILE = BASE_DIR / "logs" / "LaBet.log"
