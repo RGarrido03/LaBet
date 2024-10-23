@@ -15,13 +15,13 @@ from app.models import BetHouse, Game, Team, GameOdd
 class BetclicScrapper:
     def __init__(
         self,
-        url: str = "https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit=500&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate",
+        url: str = "https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit=5&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate",
     ):
         self.url = url
         self.data: Optional[dict] = None
         self.parsed_data: list[GameOdd] = []
         self.bet_house = self.get_or_create_bet_house()
-        self.logger =logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
         # add a file handler
         self.logger.addHandler(logging.FileHandler(settings.LOG_FILE))
 
@@ -56,6 +56,8 @@ class BetclicScrapper:
 
         if not team_1 or not team_2:
             self.logger.info("Skipping event, one or both teams not found.")
+            self.logger.info(f"Team 1: {team_1}, Team 2: {team_2}")
+            self.logger.info(f"Event: {event}")
             return None
 
         date = datetime.fromisoformat(event["date"])
@@ -65,7 +67,10 @@ class BetclicScrapper:
             game = Game.objects.create(home_team=team_1, away_team=team_2, date=date)
 
         try:
-            odds = event["grouped_markets"][0]["markets"][0]["selections"]
+            print(len(event["grouped_markets"]))
+            odds = event["grouped_markets"][0]["markets"][0]["selections"][0]
+
+            # FOR OTHER SPORTS THIS NEEDS TO BE REFACTORED
             return GameOdd(
                 game=game,
                 bet_house=self.bet_house,
