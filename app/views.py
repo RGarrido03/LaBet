@@ -15,8 +15,4 @@ def index(request: WSGIRequest) -> HttpResponse:
 def scrap_test(request: WSGIRequest) -> JsonResponse:
     scrapper = BetclicScrapper()
     data = scrapper.scrap()
-
-    # Serialize the data to JSON
-    serialized_data = serializers.serialize("json", data)
-
-    return JsonResponse(serialized_data, safe=False)
+    return JsonResponse({"games": data}, safe=False)
