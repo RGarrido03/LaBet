@@ -1,6 +1,7 @@
+from django.contrib.auth import authenticate
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from app.models import *
 from app.modules.betclic import BetclicScrapper
@@ -10,6 +11,22 @@ from app.utils.odds import calculate_combinations
 
 def index(request: WSGIRequest) -> HttpResponse:
     return render(request, "index.html")
+
+
+def login(request: WSGIRequest) -> HttpResponse:
+    if request.user.is_authenticated:
+        return redirect("index")
+
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user: User = authenticate(request, username=username, password=password)
+        if user is not None:
+            return redirect("index")
+        else:
+            return render(request, "login.html", {"error": "Invalid credentials"})
+
+    return render(request, "login.html")
 
 
 def betclic_test(request: WSGIRequest) -> JsonResponse:

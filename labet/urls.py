@@ -23,6 +23,7 @@ from app import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
+    path("login/", views.login, name="login"),
     path("betclic_test/", views.betclic_test, name="betclic_test"),
     path("placard_test/", views.placard_test, name="placard_test"),
     path("combinations/<int:id>/", views.combinations, name="combinations"),
