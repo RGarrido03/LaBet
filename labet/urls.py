@@ -23,5 +23,6 @@ from app import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
+    path("scrap_test/", views.scrap_test, name="scrap_test"),
     path("__reload__/", include("django_browser_reload.urls")),
 ]
