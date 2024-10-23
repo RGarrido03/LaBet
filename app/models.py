@@ -22,6 +22,7 @@ class Sport(models.Model):
 class Team(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
+    normalized_name = models.CharField(max_length=255)
     abbreviation = models.CharField(max_length=3)
     logo = models.ImageField(upload_to="static/logos")
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
