@@ -11,6 +11,7 @@ class Scrapper(ABC):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.addHandler(logging.FileHandler(settings.LOG_FILE))
+        self.logger.addHandler(logging.StreamHandler())
         self.data: Optional[dict] = None
         self.parsed_data: list[GameOdd] = []
         self.bet_house = self.get_or_create_bet_house()

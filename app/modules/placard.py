@@ -1,10 +1,12 @@
 import datetime
 
 import requests
+from unidecode import unidecode
 
 from app.models import *
 from typing import Optional, Any, List
 from app.modules.scrapper import Scrapper
+from app.modules.utils.similarity import find_most_similar_levenshtein
 
 
 class PlacardScrapper(Scrapper):
@@ -26,13 +28,14 @@ class PlacardScrapper(Scrapper):
                 match = self.parse_event(event)
                 if match:
                     matches.append(match)
-
+        self.logger.info("Scraping completed. Total matches found: %d", len(matches))
         return matches
 
     def parse_json(self):
         pass
 
     def get_or_create_bet_house(self):
+        self.logger.info("Retrieving Placard BetHouse object.")
         return BetHouse.objects.get_or_create(name="Placard")[0]
 
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
@@ -40,7 +43,9 @@ class PlacardScrapper(Scrapper):
             event_date = event["StartDateTime"]
             home_team = self.get_team_from_event(event, 1)
             away_team = self.get_team_from_event(event, 3)
-            draw_team = self.get_team_from_event(event, 2)
+            if not home_team or not away_team:
+                self.logger.warning("Missing team data for event",)
+                return None
 
             home_odd = event["MarketOutcome1_Price"]
             away_odd = event["MarketOutcome3_Price"]
@@ -49,11 +54,14 @@ class PlacardScrapper(Scrapper):
             game = Game.objects.filter(home_team=home_team, away_team=away_team, date=event_date).first()
             if not game:
                 game = Game.objects.create(home_team=home_team, away_team=away_team, date=event_date)
-
+                self.logger.info("Created new game: %s vs %s on %s", home_team, away_team, event_date)
             try:
                 home_odd = float(home_odd)
                 away_odd = float(away_odd)
                 draw_odd = float(draw_odd)
+                self.logger.info("Parsed odds for game %s vs %s: Home: %f, Away: %f, Draw: %f", home_team, away_team,
+                                 home_odd, away_odd, draw_odd)
+
                 return GameOdd(game=game, bet_house=self.bet_house, home_odd=home_odd, away_odd=away_odd,
                                draw_odd=draw_odd)
             except ValueError as e:
@@ -61,13 +69,29 @@ class PlacardScrapper(Scrapper):
                 return None
 
         except KeyError as e:
+
             print(f"Key error while parsing event: {e}")
             return None
 
     def get_team_from_event(self, event: dict[str, Any], index: int) -> Optional[Team]:
         try:
-            return Team.objects.get(name=event["MarketOutcome" + str(index) + "_Name"])
-        except (Team.DoesNotExist, IndexError, KeyError):
+            teamname = unidecode(event["MarketOutcome" + str(index) + "_Description"]).lower()
+            team = Team.objects.filter(name__icontains=teamname).first()
+            if not team:
+                # Se não encontrar, buscar o nome mais similar usando Levenshtein
+                all_teams = Team.objects.values_list('normalized_name', flat=True)
+                most_similar_team, distance = find_most_similar_levenshtein(teamname, all_teams)
+
+                # ou seja 4 alteracoes
+                if distance <= 5:  # Define um limite de similaridade (ajuste conforme necessário)
+
+                    team = Team.objects.filter(normalized_name=most_similar_team).first()
+                    self.logger.info(
+                        f"Equipe '{teamname}' não encontrada. Usando equipe similar: '{most_similar_team}'.")
+                    return team
+
+        except (Team.DoesNotExist, IndexError, KeyError) as e:
+            self.logger.warning("Could not find team for index %d: %s", index, e)
             return None
 
     def _get_all_competitions_ids(self) -> List[Any]:
@@ -146,6 +170,7 @@ class PlacardScrapper(Scrapper):
             for competition_data in response_data["data"]["CompetitionDataList"]["List"]
             for competition in competition_data["CompetitionList"]["List"]
         ]
+        self.logger.info("Found %d competitions.", len(competition_ids))
 
         return competition_ids
 
