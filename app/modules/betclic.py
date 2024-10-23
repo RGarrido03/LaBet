@@ -19,8 +19,6 @@ class BetclicScrapper(Scrapper):
     ):
         super().__init__()
         self.url = url
-        self.parsed_data: list[GameOdd] = []
-        self.bet_house = self.get_or_create_bet_house()
 
     def get_or_create_bet_house(self) -> BetHouse:
         """Retrieve or create the Betclic BetHouse object."""
