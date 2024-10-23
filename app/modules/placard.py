@@ -6,7 +6,7 @@ from unidecode import unidecode
 from app.models import *
 from typing import Optional, Any, List
 from app.modules.scrapper import Scrapper
-from app.modules.utils.similarity import find_most_similar_levenshtein
+from app.utils.similarity import find_most_similar_levenshtein
 
 
 class PlacardScrapper(Scrapper):
@@ -76,14 +76,15 @@ class PlacardScrapper(Scrapper):
     def get_team_from_event(self, event: dict[str, Any], index: int) -> Optional[Team]:
         try:
             teamname = unidecode(event["MarketOutcome" + str(index) + "_Description"]).lower()
+            print(teamname, "teamname")
             team = Team.objects.filter(name__icontains=teamname).first()
             if not team:
                 # Se não encontrar, buscar o nome mais similar usando Levenshtein
                 all_teams = Team.objects.values_list('normalized_name', flat=True)
                 most_similar_team, distance = find_most_similar_levenshtein(teamname, all_teams)
-
+                print(most_similar_team, distance, "most_similar_team")
                 # ou seja 4 alteracoes
-                if distance <= 5:  # Define um limite de similaridade (ajuste conforme necessário)
+                if distance <= 6:  # Define um limite de similaridade (ajuste conforme necessário)
 
                     team = Team.objects.filter(normalized_name=most_similar_team).first()
                     self.logger.info(
