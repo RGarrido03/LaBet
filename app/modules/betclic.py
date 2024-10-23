@@ -47,7 +47,7 @@ class BetclicScrapper:
 
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
         """Parse a single event and return a GameOdd object if valid."""
-        if not event.get("grouped_markets"):
+        if len(event.get("grouped_markets")) < 1:
             self.logger.info("Skipping event, no grouped markets.")
             return None
 
@@ -68,15 +68,18 @@ class BetclicScrapper:
 
         try:
             print(len(event["grouped_markets"]))
-            odds = event["grouped_markets"][0]["markets"][0]["selections"][0]
+            odds = event["grouped_markets"][0]["markets"][0]["selections"]
+
+            # need to find which is the key error
+
 
             # FOR OTHER SPORTS THIS NEEDS TO BE REFACTORED
             return GameOdd(
                 game=game,
                 bet_house=self.bet_house,
-                home_odd=odds[0]["odds"],
-                draw_odd=odds[1]["odds"],
-                away_odd=odds[2]["odds"],
+                home_odd=odds[0][0]["odds"],
+                draw_odd=odds[1][0]["odds"],
+                away_odd=odds[2][0]["odds"],
             )
         except (KeyError, IndexError) as e:
             self.logger.error(f"Error parsing odds for event: {event}, error: {e}")
