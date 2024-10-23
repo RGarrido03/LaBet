@@ -46,9 +46,9 @@ class PlacardScrapper(Scrapper):
             away_odd = event["MarketOutcome3_Price"]
             draw_odd = event["MarketOutcome2_Price"]
 
-            game = Game.objects.filter(home_team=home_team, away_team=away_team, date=self.today).first()
+            game = Game.objects.filter(home_team=home_team, away_team=away_team, date=event_date).first()
             if not game:
-                game = Game.objects.create(home_team=home_team, away_team=away_team, date=self.today)
+                game = Game.objects.create(home_team=home_team, away_team=away_team, date=event_date)
 
             try:
                 home_odd = float(home_odd)
@@ -64,14 +64,11 @@ class PlacardScrapper(Scrapper):
             print(f"Key error while parsing event: {e}")
             return None
 
-    def get_team_from_event(self, event: dict[str, Any], index: int) -> str:
-        if index == 1:
-            return event["MarketOutcome1_Description"]
-        elif index == 2:
-            return event["MarketOutcome2_Description"]
-        elif index == 3:
-            return event["MarketOutcome3_Description"]
-        return ""
+    def get_team_from_event(self, event: dict[str, Any], index: int) -> Optional[Team]:
+        try:
+            return Team.objects.get(name=event["MarketOutcome" + str(index) + "_Name"])
+        except (Team.DoesNotExist, IndexError, KeyError):
+            return None
 
     def _get_all_competitions_ids(self) -> List[Any]:
         headers = {
