@@ -15,7 +15,7 @@ class Scrapper(ABC):
         self.parsed_data: list[GameOdd] = []
         self.bet_house = self.get_or_create_bet_house()
     @abstractmethod
-    def scrap(self):
+    def scrap(self) -> list[GameOdd]:
         pass
 
     @abstractmethod
