@@ -19,7 +19,6 @@ class BetclicScrapper(Scrapper):
     ):
         super().__init__()
         self.url = url
-        self.data: Optional[dict] = None
         self.parsed_data: list[GameOdd] = []
         self.bet_house = self.get_or_create_bet_house()
 
