@@ -15,4 +15,4 @@ def index(request: WSGIRequest) -> HttpResponse:
 def scrap_test(request: WSGIRequest) -> JsonResponse:
     scrapper = BetclicScrapper()
     data = scrapper.scrap()
-    return JsonResponse({"games": data}, safe=False)
+    return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)

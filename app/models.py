@@ -44,7 +44,7 @@ class Team(models.Model):
     name = models.CharField(max_length=255)
     normalized_name = models.CharField(max_length=255)
     abbreviation = models.CharField(max_length=3)
-    logo = models.ImageField(upload_to="static/logos")
+    logo = models.URLField(null=True)
     sport = models.ForeignKey(Sport, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -82,7 +82,7 @@ class Game(models.Model):
 class BetHouse(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
-    logo = models.ImageField(upload_to="static/logos")
+    logo = models.URLField(null=True)
     website = models.URLField()
 
     def __str__(self):
