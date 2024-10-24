@@ -1,0 +1,18 @@
+{% extends "_base.html" %}
+
+{% block content %}
+    <h1 class="text-3xl font-semibold text-center dark:text-white mb-8">Choose your plan</h1>
+    <div class="flex gap-16 justify-center">
+        {% for tier in tiers %}
+            {% tier_card %}
+                {% slot id %} {{ tier.name | lower }} {% endslot %}
+                {% slot title %} {{ tier.name }} plan {% endslot %}
+                {% slot price %} {{ tier.price }} {% endslot %}
+                {% slot max_bets %} {{ tier.max_bets }} {% endslot %}
+                {% slot min_arbitrage %} {{ tier.min_arbitrage }} {% endslot %}
+                {% slot max_wallet %} {{ tier.max_wallet }} {% endslot %}
+                {% slot charts result=tier.charts_included %} {% endslot %}
+            {% endtier_card %}
+        {% endfor %}
+    </div>
+{% endblock content %}

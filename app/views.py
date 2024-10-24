@@ -16,6 +16,10 @@ def index(request: WSGIRequest) -> HttpResponse:
     return render(request, "index.html")
 
 
+def tier(request: WSGIRequest) -> HttpResponse:
+    return render(request, "tier.html", {"tiers": Tier.objects.all()})
+
+
 def login(request: WSGIRequest) -> HttpResponse:
     if request.user.is_authenticated:
         return redirect("index")

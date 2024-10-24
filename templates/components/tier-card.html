@@ -1,0 +1,32 @@
+<div class="flex-1 w-full max-w-sm p-4 border border-gray-200 rounded-lg shadow sm:p-8 bg-gray-100 dark:bg-gray-900 dark:border-gray-700">
+    <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">{% render_slot slots.title %}</h5>
+    <div class="flex items-baseline text-gray-900 dark:text-white">
+        <span class="text-3xl font-semibold">€</span>
+        <span class="text-5xl font-extrabold tracking-tight">{% render_slot slots.price %}</span>
+        <span class="ms-1 text-xl font-normal text-gray-500 dark:text-gray-400">/month</span>
+    </div>
+    <ul role="list" class="space-y-5 my-7">
+        {% with max_bets=slots.max_bets %}
+            {% tier_feature available %}
+                {% slot text %} {% render_slot max_bets %} bets {% endslot %}
+            {% endtier_feature %}
+        {% endwith %}
+        {% with min_arbitrage=slots.min_arbitrage %}
+            {% tier_feature available %}
+                {% slot text %} Arbitrage over {% render_slot min_arbitrage %} {% endslot %}
+            {% endtier_feature %}
+        {% endwith %}
+        {% with max_wallet=slots.max_wallet %}
+            {% tier_feature available %}
+                {% slot text %} Up to {% render_slot max_wallet %} € in wallet {% endslot %}
+            {% endtier_feature %}
+        {% endwith %}
+        {% tier_feature available=slots.charts.attributes.result %}
+            {% slot text %} Charts {% endslot %}
+        {% endtier_feature %}
+    </ul>
+    <button type="button"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-900 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex justify-center w-full text-center">
+        Choose plan
+    </button>
+</div>
