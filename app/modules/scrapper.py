@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 class Scrapper(ABC):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
         self.logger.addHandler(logging.FileHandler(settings.LOG_FILE))
         self.logger.addHandler(logging.StreamHandler())
         self.data: Optional[dict] = None

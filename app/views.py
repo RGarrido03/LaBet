@@ -85,12 +85,24 @@ def register(request: WSGIRequest) -> HttpResponse:
 
 
 def betclic_test(request: WSGIRequest) -> JsonResponse:
+    #request can have a parameter to select teh date
+    date_param = request.GET.get('date', None)
+    date = None
+    if date_param:
+        date = datetime.datetime.fromisoformat(date_param)
+
     scrapper = BetclicScrapper()
     data = scrapper.scrap()
-    return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
+
+    if date:
+        data = [game_odd.to_json() for game_odd in data if game_odd.game.date >= date]
+    else:
+        data = [game_odd.to_json() for game_odd in data]
+    return JsonResponse(data, safe=False)
 
 
 def placard_test(request: WSGIRequest) -> JsonResponse:
+
     scrapper = PlacardScrapper()
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, AnyStr
 
 
 # Opcao com a bilioteca
@@ -69,6 +69,14 @@ def levenshtein_distance(s1, s2):
                                matrix[i - 1][j - 1] + cost)  # Substituição
     # O valor na célula inferior direita da matriz é a distância de edição
     return matrix[len(s1)][len(s2)]
+
+
+
+import difflib
+
+def get_most_similar_name(input_name, possible_names) -> List[AnyStr]:
+    return difflib.get_close_matches(input_name, possible_names, n=1, cutoff=0.5)
+
 
 
 # Exemplo de uso
