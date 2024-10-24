@@ -1,6 +1,6 @@
 import datetime
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login as auth_login
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
@@ -25,6 +25,7 @@ def login(request: WSGIRequest) -> HttpResponse:
         password = request.POST["password"]
         user: User = authenticate(request, username=username, password=password)
         if user is not None:
+            auth_login(request, user)
             return redirect("index")
         else:
             return render(request, "login.html", {"error": "Invalid credentials"})
