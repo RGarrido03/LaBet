@@ -27,7 +27,11 @@
                     id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown"
                     data-dropdown-placement="bottom">
                 <span class="sr-only">Open user menu</span>
-                <span class="material-symbols-rounded">person</span>
+                {% if user.is_authenticated %}
+                    <span class="text-xl font-semibold">{{ user.get_full_name | first }}</span>
+                {% else %}
+                    <span class="material-symbols-rounded">person</span>
+                {% endif %}
             </button>
             <!-- Dropdown menu -->
             <div class="z-50 hidden my-4 text-base border list-none bg-white divide-y divide-gray-100 rounded-lg shadow-lg dark:bg-gray-700 dark:divide-gray-600"
