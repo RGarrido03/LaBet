@@ -13,6 +13,8 @@ from app.utils.odds import calculate_combinations
 
 
 def index(request: WSGIRequest) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return render(request, "landing.html")
     return render(request, "index.html")
 
 

@@ -9,3 +9,8 @@ class TierCard(component.Component):
 @component.register("tier_feature")
 class TierFeature(component.Component):
     template_name = "components/tier-feature.html"
+
+
+@component.register("landing_card")
+class LandingCard(component.Component):
+    template_name = "components/landing-card.html"
