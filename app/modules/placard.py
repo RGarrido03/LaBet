@@ -6,7 +6,7 @@ from unidecode import unidecode
 from app.models import *
 from typing import Optional, Any, List
 from app.modules.scrapper import Scrapper
-from app.utils.similarity import find_most_similar_levenshtein
+from app.utils.similarity import find_most_similar_levenshtein, get_most_similar_name
 
 
 class PlacardScrapper(Scrapper):
@@ -41,10 +41,10 @@ class PlacardScrapper(Scrapper):
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
         try:
             event_date = event["StartDateTime"]
-            home_team = self.get_team_from_event(event, 1)
-            away_team = self.get_team_from_event(event, 3)
+            home_team = self.get_team_from_event(event["HomeOpponent"])
+            away_team = self.get_team_from_event(event["AwayOpponent"])
             if not home_team or not away_team:
-                self.logger.warning("Missing team data for event",)
+                self.logger.warning(f"Missing team data for event, teams home { home_team } and away { away_team },\n supose home { event["HomeOpponent"] } and supose away { event['AwayOpponent'] }", )
                 return None
 
             home_odd = event["MarketOutcome1_Price"]
@@ -73,23 +73,25 @@ class PlacardScrapper(Scrapper):
             print(f"Key error while parsing event: {e}")
             return None
 
-    def get_team_from_event(self, event: dict[str, Any], index: int) -> Optional[Team]:
+    def get_team_from_event(self, t: dict[str, Any]) -> Optional[Team]:
         try:
-            teamname = unidecode(event["MarketOutcome" + str(index) + "_Description"]).lower()
+            teamname = unidecode(t).lower()
             print(teamname, "teamname")
             team = Team.objects.filter(name__icontains=teamname).first()
             if not team:
                 # Se não encontrar, buscar o nome mais similar usando Levenshtein
                 all_teams = Team.objects.values_list('normalized_name', flat=True)
-                most_similar_team, distance = find_most_similar_levenshtein(teamname, all_teams)
-                print(most_similar_team, distance, "most_similar_team")
+                most_similar_team = get_most_similar_name(teamname, all_teams)[0]
                 # ou seja 4 alteracoes
-                if distance <= 6:  # Define um limite de similaridade (ajuste conforme necessário)
-
-                    team = Team.objects.filter(normalized_name=most_similar_team).first()
+                if most_similar_team:
+                    team = Team.objects.filter(normalized_name__icontains=most_similar_team).first()
                     self.logger.info(
                         f"Equipe '{teamname}' não encontrada. Usando equipe similar: '{most_similar_team}'.")
                     return team
+                else:
+                    self.logger.warning(f"Could not find team similar to {teamname}")
+                    return None
+            return team
 
         except (Team.DoesNotExist, IndexError, KeyError) as e:
             self.logger.warning("Could not find team for index %d: %s", index, e)

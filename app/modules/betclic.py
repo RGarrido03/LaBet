@@ -10,15 +10,20 @@ from unidecode import unidecode
 
 from app.models import BetHouse, Game, Team, GameOdd
 from app.modules.scrapper import Scrapper
+from app.utils.similarity import get_most_similar_name
+
+
 
 
 class BetclicScrapper(Scrapper):
     def __init__(
         self,
-        url: str = "https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit=50&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate",
     ):
         super().__init__()
-        self.url = url
+        self.limit = 50
+        self.bet_house = self.get_or_create_bet_house()
+        self.url = f"https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit={self.limit}&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate"
+
 
     def get_or_create_bet_house(self) -> BetHouse:
         """Retrieve or create the Betclic BetHouse object."""
@@ -26,6 +31,8 @@ class BetclicScrapper(Scrapper):
         if not db_obj:
             return BetHouse.objects.create(name="Betclic", logo="", website="betclic.pt")
         return db_obj
+
+
 
     def scrap(self) -> list[GameOdd]:
         """Fetch data from API and parse the response."""
@@ -62,7 +69,6 @@ class BetclicScrapper(Scrapper):
             game = Game.objects.create(home_team=team_1, away_team=team_2, date=date)
 
         try:
-            print(len(event["grouped_markets"]))
             odds = event["grouped_markets"][0]["markets"][0]["selections"]
 
             # need to find which is the key error
@@ -83,8 +89,17 @@ class BetclicScrapper(Scrapper):
     def get_team_from_event(self, event: dict, index: int) -> Optional[Team]:
         """Helper function to extract team object based on the event data."""
         try:
-            team_name = unidecode(event["contestants"][index]["name"]).lower()
-            return Team.objects.filter(name__icontains=team_name).first()
+            teamname = unidecode(event["contestants"][index]["name"]).lower()
+            team = Team.objects.filter(normalized_name__icontains=teamname).first()
+            if not team:
+                all_teams = Team.objects.values_list('normalized_name', flat=True)
+                most_similar_team = get_most_similar_name(teamname, all_teams)[0]
+                # ou seja 4 alteracoes
+                if most_similar_team:
+                    return Team.objects.filter(normalized_name__icontains=most_similar_team).first()
+
+            else:
+                return team
         except (IndexError, KeyError) as e:
             self.logger.error(f"Error extracting team from event: {event}, error: {e}")
             return None
@@ -102,3 +117,9 @@ class BetclicScrapper(Scrapper):
                 clean_data.append(match)
 
         return clean_data
+
+    def filter_per_date(self, date: datetime) -> list[GameOdd]:
+        # i want the games with date greater than the date passed
+        return GameOdd.objects.filter(game__date__gt=date)
+
+
