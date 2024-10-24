@@ -3,9 +3,14 @@
 {% load tailwind_filters %}
 
 {% block content %}
-    <h1 class="mb-6 text-3xl font-semibold text-center dark:text-white">Login</h1>
+    <div class="flex flex-col gap-2 mb-8">
+        <h1 class="text-3xl font-semibold text-center dark:text-white">Login</h1>
+        <p class="text-center dark:text-white">Don't have an account?
+            <a href="{% url 'register' %}" class="text-blue-700 dark:text-blue-500 hover:underline">Sign up here</a>
+        </p>
+    </div>
 
-    <form method="post" class="max-w-sm mx-auto flex flex-col gap-4">
+    <form method="post" class="max-w-lg mx-auto flex flex-col gap-4">
         {% csrf_token %}
         <div>
             <label for="username"

@@ -26,6 +26,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("login/", views.login, name="login"),
     path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
+    path("register/", views.register, name="register"),
     path("betclic_test/", views.betclic_test, name="betclic_test"),
     path("placard_test/", views.placard_test, name="placard_test"),
     path("combinations/<int:id>/", views.combinations, name="combinations"),
