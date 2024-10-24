@@ -17,6 +17,14 @@ def index(request: WSGIRequest) -> HttpResponse:
 
 
 def tier(request: WSGIRequest) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if request.method == "POST":
+        tier_id = request.POST["tier"]
+        request.user.tier = Tier.objects.get(id=tier_id)
+        request.user.save()
+        return render(request, "tier.html", {"tiers": Tier.objects.all()})
     return render(request, "tier.html", {"tiers": Tier.objects.all()})
 
 
