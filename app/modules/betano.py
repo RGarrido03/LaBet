@@ -98,8 +98,8 @@ class BetanoScrapper(Scrapper):
                 parsed_games = [
                     match
                     for event in games
-                    if (match := self.parse_event(event))
-                    and event["markets"][0]["name"].lower() == "resultado final"
+                    if event["markets"][0]["name"].lower() == "resultado final"
+                    and (match := self.parse_event(event))
                 ]
 
                 if not parsed_games:
@@ -109,7 +109,7 @@ class BetanoScrapper(Scrapper):
                 latest_id = data["data"]["blocks"][0]["events"][-1]["id"]
                 last_game_time = data["data"]["blocks"][0]["events"][-1]["startTime"]
             except Exception as e:
-                self.logger.error(f"Error fetching data: {e}")
+                self.logger.error(f"Betano Error fetching data: {e}")
                 break
 
         # return all_games
