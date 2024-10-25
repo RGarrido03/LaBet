@@ -7,7 +7,16 @@ from app.modules.scrapper import Scrapper
 
 class BetanoScrapper(Scrapper):
     def __init__(self):
-        super().__init__()
+        super().__init__(
+            ...,
+            ...,
+            ...,
+            ...,
+            ...,
+            ...,
+            ...,
+            ...,
+        )
         self.bet_house = self.get_or_create_bet_house()
         self.url = "https://www.betano.pt/api/sport/futebol/jogos-de-hoje/"
 
@@ -21,23 +30,42 @@ class BetanoScrapper(Scrapper):
     def scrap(self) -> list[GameOdd]:
         """Fetch data from API and parse the response."""
         try:
+            import httpx
+
             payload = ""
             headers = {
-                "cookie": "__cf_bm=tfHhFjIUPHOFz6_8ciQJ0nydR2MUW2KLqbknl0q2BCY-1729817862-1.0.1.1-hb93.IX9gPj.pzLfszl0.U77c6EZLMUxexuvkAGDpwCSLnRLb94l6DkZ30uo6MRq4RFUmj6OP0_qE7k.5rsIvA; _cfuvid=2H8KjhydB93fF7qx.qvANaahXRI2i9v.GxoDo3ZLmx4-1729817862539-0.0.1.1-604800000",
+                "cookie": "__cf_bm=G_mlLk8j3pPnNx0IDdMbs7lm.hbXKtEl.TDX8Cgwvq0-1729820377-1.0.1.1-glua9.Xipq6jUK5tSyDjV2aBPlpm8dCkMxhTcK7cCO2LRlanVnKGep9wFH26BHHNHFLz.B7ME3EOIW.E.aeWOw; _cfuvid=2H8KjhydB93fF7qx.qvANaahXRI2i9v.GxoDo3ZLmx4-1729817862539-0.0.1.1-604800000",
                 "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:131.0) Gecko/20100101 Firefox/131.0",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8",
                 "Accept-Language": "pt-PT,pt;q=0.8,en;q=0.5,en-US;q=0.3",
                 "Accept-Encoding": "gzip, deflate, br, zstd",
                 "Connection": "keep-alive",
-                "Cookie": "__cf_bm=eEU_s06v0lxBcyZTUbqIPBzJl0iSckFXWkCVPXpZsHY-1729817804-1.0.1.1-IhkaYCK0h8dxi4inFmNX1B8QTDozP04KglUihUP5mX2f4McM9A5oxSSQC55jzCpF81.cGr0.kAZtVRYGOY4kaA; _cfuvid=r5ANt7VbzbumhmUNmoUzvVEWfM3wUVBV0sVHgDtLpzI-1729817804655-0.0.1.1-604800000",
+                "Cookie": "_cfuvid=r5ANt7VbzbumhmUNmoUzvVEWfM3wUVBV0sVHgDtLpzI-1729817804655-0.0.1.1-604800000; __cf_bm=xITR4NX5VlwhPYDf.QirP8E.v8km972ablqb0VkjdmA-1729820568-1.0.1.1-xzJGYwZ5mynbYiuTvaVYZYnZY2uVYvfyX0suDKqt2oTNtSCz18UUJWeiQ8LXLnpQWUK2iIEu27JjtJRk1UgYAg",
                 "Upgrade-Insecure-Requests": "1",
                 "Sec-Fetch-Dest": "document",
                 "Sec-Fetch-Mode": "navigate",
                 "Sec-Fetch-Site": "cross-site",
                 "Priority": "u=0, i",
-                "TE": "trailers",
+                "Pragma": "no-cache",
+                "Cache-Control": "no-cache",
             }
-            response = requests.get(self.url, headers=headers)
+
+            with httpx.Client(http2=True) as client:
+                response = client.get(self.url, headers=headers)
+                # Debugando o status e o conteúdo da resposta
+                print("Status code:", response.status_code)
+                print("Headers recebidos:", response.headers)
+                print("Texto da resposta:", response.text)
+
+            # Verifique se a resposta foi bem-sucedida
+            response = requests.request(
+                "GET",
+                self.url,
+                data=payload,
+                headers=headers,
+            )
+
+            print(response.text)
             response.raise_for_status()  # Ensure HTTP errors are handled
             self.data = response.json()  # Load the response as JSON
             print(self.data)
