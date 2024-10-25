@@ -3,8 +3,10 @@ from abc import ABC, abstractmethod
 from typing import Optional, Any
 
 from django.conf import settings
+from unidecode import unidecode
 
 from app.models import GameOdd, Team, BetHouse
+from app.utils.similarity import get_most_similar_name
 
 
 # abstract class for scrapper
@@ -33,6 +35,33 @@ class Scrapper(ABC):
             )
         return db_obj
 
+    def get_team(self, name: str) -> Team | None:
+        try:
+            team_name = unidecode(name).lower()
+            team = Team.objects.filter(name__icontains=team_name).first()
+
+            if team:
+                return team
+
+            all_teams = Team.objects.values_list("normalized_name", flat=True)
+            most_similar_team = get_most_similar_name(team_name, all_teams)[0]
+
+            if most_similar_team:
+                team = Team.objects.filter(
+                    normalized_name__icontains=most_similar_team
+                ).first()
+                self.logger.info(
+                    "Team %s not found; using %s.", team_name, most_similar_team
+                )
+                return team
+
+            self.logger.warning(f"Could not find team similar to {team_name}")
+            return None
+
+        except (Team.DoesNotExist, IndexError, KeyError) as e:
+            self.logger.warning("Could not find team: %s", e)
+            return None
+
     @abstractmethod
     def scrap(self) -> list[GameOdd]:
         pass
@@ -46,5 +75,5 @@ class Scrapper(ABC):
         pass
 
     @abstractmethod
-    def get_team_from_event(self, event: dict, index: int) -> Optional[Team]:
+    def get_team_from_event(self, event: dict, index: int) -> Team | None:
         pass

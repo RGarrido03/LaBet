@@ -2,11 +2,9 @@ import datetime
 from typing import Optional, Any, List
 
 import requests
-from unidecode import unidecode
 
 from app.models import *
 from app.modules.scrapper import Scrapper
-from app.utils.similarity import get_most_similar_name
 
 
 class PlacardScrapper(Scrapper):
@@ -42,8 +40,8 @@ class PlacardScrapper(Scrapper):
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
         try:
             event_date = event["StartDateTime"]
-            home_team = self.get_team_from_event(event["HomeOpponent"])
-            away_team = self.get_team_from_event(event["AwayOpponent"])
+            home_team = self.get_team(event["HomeOpponent"])
+            away_team = self.get_team(event["AwayOpponent"])
             if not home_team or not away_team:
                 self.logger.warning(
                     f"Missing team data for event, teams home { home_team } and away { away_team },\n supose home { event["HomeOpponent"] } and supose away { event['AwayOpponent'] }",
@@ -77,33 +75,6 @@ class PlacardScrapper(Scrapper):
 
         except (KeyError, ValueError) as e:
             print(f"Error while parsing event: {e}")
-            return None
-
-    def get_team_from_event(self, t: str) -> Optional[Team]:
-        try:
-            teamname = unidecode(t).lower()
-            team = Team.objects.filter(name__icontains=teamname).first()
-
-            if team:
-                return team
-
-            all_teams = Team.objects.values_list("normalized_name", flat=True)
-            most_similar_team = get_most_similar_name(teamname, all_teams)[0]
-
-            if most_similar_team:
-                team = Team.objects.filter(
-                    normalized_name__icontains=most_similar_team
-                ).first()
-                self.logger.info(
-                    "Team %s not found; using %s.", teamname, most_similar_team
-                )
-                return team
-
-            self.logger.warning(f"Could not find team similar to {teamname}")
-            return None
-
-        except (Team.DoesNotExist, IndexError, KeyError) as e:
-            self.logger.warning("Could not find team: %s", e)
             return None
 
     def _get_all_competitions_ids(self) -> List[Any]:

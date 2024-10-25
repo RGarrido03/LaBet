@@ -3,11 +3,9 @@ from datetime import datetime
 from typing import Any
 
 import requests
-from unidecode import unidecode
 
-from app.models import Game, Team, GameOdd
+from app.models import Game, GameOdd
 from app.modules.scrapper import Scrapper
-from app.utils.similarity import get_most_similar_name
 
 
 class BetclicScrapper(Scrapper):
@@ -42,8 +40,8 @@ class BetclicScrapper(Scrapper):
             self.logger.info("Skipping event, no grouped markets.")
             return None
 
-        team_1 = self.get_team_from_event(event, 0)
-        team_2 = self.get_team_from_event(event, 1)
+        team_1 = self.get_team(event["contestants"][0]["name"])
+        team_2 = self.get_team(event["contestants"][1]["name"])
 
         if not team_1 or not team_2:
             self.logger.info("Skipping event, one or both teams not found.")
@@ -70,26 +68,6 @@ class BetclicScrapper(Scrapper):
             )
         except (KeyError, IndexError) as e:
             self.logger.error(f"Error parsing odds for event: {event}, error: {e}")
-            return None
-
-    def get_team_from_event(self, event: dict, index: int) -> Team | None:
-        """Helper function to extract team object based on the event data."""
-        try:
-            teamname = unidecode(event["contestants"][index]["name"]).lower()
-            team = Team.objects.filter(normalized_name__icontains=teamname).first()
-            if team:
-                return team
-
-            all_teams = Team.objects.values_list("normalized_name", flat=True)
-            most_similar_team = get_most_similar_name(teamname, all_teams)[0]
-
-            if most_similar_team:
-                return Team.objects.filter(
-                    normalized_name__icontains=most_similar_team
-                ).first()
-            return None
-        except (IndexError, KeyError) as e:
-            self.logger.error(f"Error extracting team from event: {event}, error: {e}")
             return None
 
     def parse_json(self) -> list[GameOdd]:
