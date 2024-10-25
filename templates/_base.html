@@ -45,14 +45,14 @@
                         <span class="block text-sm text-gray-500 truncate dark:text-gray-400">You're not signed in.</span>
                     {% endif %}
                 </div>
+                {% if user.is_authenticated %}
                 <ul class="py-2">
-                    {% if user.is_authenticated %}
                         <li>
                             <a href="{% url 'tier' %}"
                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Plans</a>
                         </li>
-                    {% endif %}
                 </ul>
+                {% endif %}
                 <ul class="py-2" aria-labelledby="user-menu-button">
                     {% if user.is_authenticated %}
                         <form method="post" action="{% url 'logout' %}">
