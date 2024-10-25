@@ -5,9 +5,7 @@ from app.modules.scrapper import Scrapper
 
 
 class BetclicScrapper(Scrapper):
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         team_extractor = lambda x, idx: x["contestants"][idx]["name"]
         odds_extractor = lambda x, idx: x["grouped_markets"][0]["markets"][0][
             "selections"
