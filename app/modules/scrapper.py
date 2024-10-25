@@ -60,7 +60,7 @@ class Scrapper(ABC):
     def get_team(self, name: str) -> Team | None:
         try:
             team_name = unidecode(name).lower()
-            team = Team.objects.filter(name__icontains=team_name).first()
+            team = Team.objects.filter(normalized_name__icontains=team_name).first()
 
             if team:
                 return team
