@@ -88,7 +88,3 @@ class Scrapper(ABC):
     @abstractmethod
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
         pass
-
-    @abstractmethod
-    def get_team_from_event(self, event: dict, index: int) -> Team | None:
-        pass
