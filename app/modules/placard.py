@@ -1,6 +1,8 @@
 import datetime
-from typing import Any, List
+from typing import Any, List, Optional
+from unidecode import unidecode
 
+from app.models import *
 from app.modules.scrapper import Scrapper
 from app.utils.similarity import get_most_similar_name
 
