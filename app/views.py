@@ -7,6 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
 from app.models import *
+from app.modules.betano import BetanoScrapper
 from app.modules.betclic import BetclicScrapper
 from app.modules.placard import PlacardScrapper
 from app.utils.odds import calculate_combinations
@@ -87,8 +88,8 @@ def register(request: WSGIRequest) -> HttpResponse:
 
 
 def betclic_test(request: WSGIRequest) -> JsonResponse:
-    #request can have a parameter to select teh date
-    date_param = request.GET.get('date', None)
+    # request can have a parameter to select teh date
+    date_param = request.GET.get("date", None)
     date = None
     if date_param:
         date = datetime.datetime.fromisoformat(date_param)
@@ -106,6 +107,13 @@ def betclic_test(request: WSGIRequest) -> JsonResponse:
 def placard_test(request: WSGIRequest) -> JsonResponse:
 
     scrapper = PlacardScrapper()
+    data = scrapper.scrap()
+    return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
+
+
+def betano_test(request: WSGIRequest) -> JsonResponse:
+
+    scrapper = BetanoScrapper()
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
