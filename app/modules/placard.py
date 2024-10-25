@@ -120,7 +120,7 @@ class PlacardScrapper(Scrapper):
 
         data = {
             "versionInfo": {
-                "moduleVersion": "dgunF08uwALFkn1B_oYUzw",
+                "moduleVersion": "NRDbYlvDXVMg02KtTge10g",
                 "apiVersion": "tXWBZZVwVY5UKMLWuZd3yQ",
             },
             "viewName": "Events.Events",
@@ -200,7 +200,7 @@ class PlacardScrapper(Scrapper):
 
         data = {
             "versionInfo": {
-                "moduleVersion": "dgunF08uwALFkn1B_oYUzw",
+                "moduleVersion": "NRDbYlvDXVMg02KtTge10g",
                 "apiVersion": "19zlE5vtzBB1w20h7QXb6A",
             },
             "viewName": "Events.Events",
