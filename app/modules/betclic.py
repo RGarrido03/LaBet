@@ -1,7 +1,6 @@
-from datetime import datetime
-from typing import Any
+from typing import Any, override
 
-from app.models import Game, GameOdd
+from app.models import GameOdd
 from app.modules.scrapper import Scrapper
 
 
@@ -9,10 +8,20 @@ class BetclicScrapper(Scrapper):
     def __init__(
         self,
     ):
+        team_extractor = lambda x, idx: x["contestants"][idx]["name"]
+        odds_extractor = lambda x, idx: x["grouped_markets"][0]["markets"][0][
+            "selections"
+        ][idx][0]["odds"]
         super().__init__(
             "Betclic",
             "https://www.betclic.pt",
             "https://upload.wikimedia.org/wikipedia/commons/f/fe/Logo_Betclic_2019.svg",
+            lambda x: team_extractor(x, 0),
+            lambda x: team_extractor(x, 1),
+            lambda x: x["date"],
+            lambda x: odds_extractor(x, 0),
+            lambda x: odds_extractor(x, 1),
+            lambda x: odds_extractor(x, 2),
         )
         self.limit = 50
         self.bet_house = self.get_or_create_bet_house()
@@ -30,38 +39,11 @@ class BetclicScrapper(Scrapper):
             match for event in data["matches"] if (match := self.parse_event(event))
         ]
 
+    @override
     def parse_event(self, event: dict[str, Any]) -> GameOdd | None:
         """Parse a single event and return a GameOdd object if valid."""
         if len(event.get("grouped_markets")) < 1:
             self.logger.info("Skipping event, no grouped markets.")
             return None
 
-        team_1 = self.get_team(event["contestants"][0]["name"])
-        team_2 = self.get_team(event["contestants"][1]["name"])
-
-        if not team_1 or not team_2:
-            self.logger.info("Skipping event, one or both teams not found.")
-            self.logger.info(f"Team 1: {team_1}, Team 2: {team_2}")
-            self.logger.info(f"Event: {event}")
-            return None
-
-        date = datetime.fromisoformat(event["date"])
-
-        (game, _) = Game.objects.get_or_create(
-            home_team=team_1, away_team=team_2, date=date
-        )
-
-        try:
-            odds = event["grouped_markets"][0]["markets"][0]["selections"]
-
-            # FOR OTHER SPORTS THIS NEEDS TO BE REFACTORED
-            return GameOdd(
-                game=game,
-                bet_house=self.bet_house,
-                home_odd=odds[0][0]["odds"],
-                draw_odd=odds[1][0]["odds"],
-                away_odd=odds[2][0]["odds"],
-            )
-        except (KeyError, IndexError) as e:
-            self.logger.error(f"Error parsing odds for event: {event}, error: {e}")
-            return None
+        return super().parse_event(event)

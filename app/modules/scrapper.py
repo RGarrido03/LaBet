@@ -1,24 +1,43 @@
 import logging
 from abc import ABC, abstractmethod
+from datetime import datetime
 from json import JSONDecodeError
-from typing import Optional, Any
+from typing import Optional, Any, Callable
 
 import requests
 from django.conf import settings
 from requests import RequestException
 from unidecode import unidecode
 
-from app.models import GameOdd, Team, BetHouse
+from app.models import GameOdd, Team, BetHouse, Game
 from app.utils.similarity import get_most_similar_name
 
 
 # abstract class for scrapper
 class Scrapper(ABC):
-    def __init__(self, name: str, website: str, logo: str):
+    def __init__(
+        self,
+        name: str,
+        website: str,
+        logo: str,
+        hteam_extractor: Callable,
+        ateam_extractor: Callable,
+        date_extractor: Callable = None,
+        hodd_extractor: Callable = None,
+        dodd_extractor: Callable = None,
+        aodd_extractor: Callable = None,
+    ):
         self.name: str = name
         self.website: str = website
         self.logo: str = logo
         self.bet_house = self.get_or_create_bet_house()
+
+        self.hteam_extractor = hteam_extractor
+        self.ateam_extractor = ateam_extractor
+        self.date_extractor = date_extractor
+        self.hodd_extractor = hodd_extractor
+        self.dodd_extractor = dodd_extractor
+        self.aodd_extractor = aodd_extractor
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
@@ -77,10 +96,35 @@ class Scrapper(ABC):
         except JSONDecodeError as e:
             self.logger.error(f"Error decoding JSON: {e}")
 
-    @abstractmethod
-    def scrap(self) -> list[GameOdd]:
-        pass
+    def parse_event(self, event: dict[str, Any]) -> GameOdd | None:
+        """Parse a single event and return a GameOdd object if valid."""
+        team_1 = self.get_team(self.hteam_extractor(event))
+        team_2 = self.get_team(self.ateam_extractor(event))
+
+        if not team_1 or not team_2:
+            self.logger.info("Skipping event, one or both teams not found.")
+            self.logger.info(f"Team 1: {team_1}, Team 2: {team_2}")
+            self.logger.info(f"Event: {event}")
+            return None
+
+        date = datetime.fromisoformat(self.date_extractor(event))
+
+        (game, _) = Game.objects.get_or_create(
+            home_team=team_1, away_team=team_2, date=date
+        )
+
+        try:
+            return GameOdd.objects.create(
+                game=game,
+                bet_house=self.bet_house,
+                home_odd=float(self.hodd_extractor(event)),
+                draw_odd=float(self.dodd_extractor(event)),
+                away_odd=float(self.aodd_extractor(event)),
+            )
+        except (KeyError, IndexError) as e:
+            self.logger.error(f"Error parsing odds for event: {event}, error: {e}")
+            return None
 
     @abstractmethod
-    def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
+    def scrap(self) -> list[GameOdd]:
         pass
