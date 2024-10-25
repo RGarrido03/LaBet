@@ -11,7 +11,11 @@ from app.utils.similarity import get_most_similar_name
 
 class PlacardScrapper(Scrapper):
     def __init__(self):
-        super().__init__()
+        super().__init__(
+            "Placard",
+            "https://www.placard.pt",
+            "https://www.placard.pt/library/logo/Placard_pt.svg",
+        )
         self.competitions_url = "https://placard.jogossantacasa.pt/PlacardWeb/screenservices/Plcard_WebEvents_CW/EventsFlow/EventList_MB/DataActionGetRegionCompetitionData"
         self.url = "https://placard.jogossantacasa.pt/PlacardWeb/screenservices/Plcard_WebEvents_CW/EventsFlow/EventList_EventListBlock/DataActionGetEventsData"
         self.today = str(datetime.date.today())
@@ -34,17 +38,6 @@ class PlacardScrapper(Scrapper):
 
     def parse_json(self):
         pass
-
-    def get_or_create_bet_house(self):
-        self.logger.info("Retrieving Placard BetHouse object.")
-        db_obj = BetHouse.objects.filter(name="Placard").first()
-        if not db_obj:
-            return BetHouse.objects.create(
-                name="Placard",
-                logo="https://www.placard.pt/library/logo/Placard_pt.svg",
-                website="placard.pt",
-            )
-        return db_obj
 
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
         try:

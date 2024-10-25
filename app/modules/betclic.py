@@ -5,7 +5,7 @@ from typing import Any
 import requests
 from unidecode import unidecode
 
-from app.models import BetHouse, Game, Team, GameOdd
+from app.models import Game, Team, GameOdd
 from app.modules.scrapper import Scrapper
 from app.utils.similarity import get_most_similar_name
 
@@ -14,21 +14,14 @@ class BetclicScrapper(Scrapper):
     def __init__(
         self,
     ):
-        super().__init__()
+        super().__init__(
+            "Betclic",
+            "https://www.betclic.pt",
+            "https://upload.wikimedia.org/wikipedia/commons/f/fe/Logo_Betclic_2019.svg",
+        )
         self.limit = 50
         self.bet_house = self.get_or_create_bet_house()
         self.url = f"https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit={self.limit}&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate"
-
-    def get_or_create_bet_house(self) -> BetHouse:
-        """Retrieve or create the Betclic BetHouse object."""
-        db_obj = BetHouse.objects.filter(name="Betclic").first()
-        if not db_obj:
-            return BetHouse.objects.create(
-                name="Betclic",
-                logo="https://upload.wikimedia.org/wikipedia/commons/f/fe/Logo_Betclic_2019.svg",
-                website="betclic.pt",
-            )
-        return db_obj
 
     def scrap(self) -> list[GameOdd]:
         """Fetch data from API and parse the response."""
