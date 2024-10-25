@@ -82,9 +82,5 @@ class Scrapper(ABC):
         pass
 
     @abstractmethod
-    def parse_json(self):
-        pass
-
-    @abstractmethod
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
         pass

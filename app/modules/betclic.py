@@ -20,8 +20,15 @@ class BetclicScrapper(Scrapper):
 
     def scrap(self) -> list[GameOdd]:
         """Fetch data from API and parse the response."""
-        self.data = self.make_request("GET", self.url)
-        return self.parse_json()
+        data = self.make_request("GET", self.url)
+
+        if not data or "matches" not in data:
+            self.logger.error("Invalid or empty data.")
+            return []
+
+        return [
+            match for event in data["matches"] if (match := self.parse_event(event))
+        ]
 
     def parse_event(self, event: dict[str, Any]) -> GameOdd | None:
         """Parse a single event and return a GameOdd object if valid."""
@@ -58,15 +65,3 @@ class BetclicScrapper(Scrapper):
         except (KeyError, IndexError) as e:
             self.logger.error(f"Error parsing odds for event: {event}, error: {e}")
             return None
-
-    def parse_json(self) -> list[GameOdd]:
-        """Parse the fetched JSON data and return the cleaned list of GameOdd."""
-        if not self.data or "matches" not in self.data:
-            self.logger.error("Invalid or empty data.")
-            return []
-
-        return [
-            match
-            for event in self.data["matches"]
-            if (match := self.parse_event(event))
-        ]

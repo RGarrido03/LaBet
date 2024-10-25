@@ -32,9 +32,6 @@ class PlacardScrapper(Scrapper):
         self.logger.info("Scraping completed. Total matches found: %d", len(matches))
         return matches
 
-    def parse_json(self):
-        pass
-
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
         try:
             event_date = event["StartDateTime"]
