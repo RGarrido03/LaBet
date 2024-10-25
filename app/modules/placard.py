@@ -1,12 +1,12 @@
 import datetime
+from typing import Optional, Any, List
 
 import requests
 from unidecode import unidecode
 
 from app.models import *
-from typing import Optional, Any, List
 from app.modules.scrapper import Scrapper
-from app.utils.similarity import find_most_similar_levenshtein, get_most_similar_name
+from app.utils.similarity import get_most_similar_name
 
 
 class PlacardScrapper(Scrapper):
@@ -28,6 +28,7 @@ class PlacardScrapper(Scrapper):
                 match = self.parse_event(event)
                 if match:
                     matches.append(match)
+
         self.logger.info("Scraping completed. Total matches found: %d", len(matches))
         return matches
 
@@ -36,7 +37,14 @@ class PlacardScrapper(Scrapper):
 
     def get_or_create_bet_house(self):
         self.logger.info("Retrieving Placard BetHouse object.")
-        return BetHouse.objects.get_or_create(name="Placard")[0]
+        db_obj = BetHouse.objects.filter(name="Placard").first()
+        if not db_obj:
+            return BetHouse.objects.create(
+                name="Placard",
+                logo="https://www.placard.pt/library/logo/Placard_pt.svg",
+                website="placard.pt",
+            )
+        return db_obj
 
     def parse_event(self, event: dict[str, Any]) -> Optional[GameOdd]:
         try:
@@ -44,57 +52,65 @@ class PlacardScrapper(Scrapper):
             home_team = self.get_team_from_event(event["HomeOpponent"])
             away_team = self.get_team_from_event(event["AwayOpponent"])
             if not home_team or not away_team:
-                self.logger.warning(f"Missing team data for event, teams home { home_team } and away { away_team },\n supose home { event["HomeOpponent"] } and supose away { event['AwayOpponent'] }", )
+                self.logger.warning(
+                    f"Missing team data for event, teams home { home_team } and away { away_team },\n supose home { event["HomeOpponent"] } and supose away { event['AwayOpponent'] }",
+                )
                 return None
 
-            home_odd = event["MarketOutcome1_Price"]
-            away_odd = event["MarketOutcome3_Price"]
-            draw_odd = event["MarketOutcome2_Price"]
+            home_odd = float(event["MarketOutcome1_Price"])
+            away_odd = float(event["MarketOutcome3_Price"])
+            draw_odd = float(event["MarketOutcome2_Price"])
 
-            game = Game.objects.filter(home_team=home_team, away_team=away_team, date=event_date).first()
-            if not game:
-                game = Game.objects.create(home_team=home_team, away_team=away_team, date=event_date)
-                self.logger.info("Created new game: %s vs %s on %s", home_team, away_team, event_date)
-            try:
-                home_odd = float(home_odd)
-                away_odd = float(away_odd)
-                draw_odd = float(draw_odd)
-                self.logger.info("Parsed odds for game %s vs %s: Home: %f, Away: %f, Draw: %f", home_team, away_team,
-                                 home_odd, away_odd, draw_odd)
+            (game, _) = Game.objects.get_or_create(
+                home_team=home_team, away_team=away_team, date=event_date
+            )
 
-                return GameOdd(game=game, bet_house=self.bet_house, home_odd=home_odd, away_odd=away_odd,
-                               draw_odd=draw_odd)
-            except ValueError as e:
-                print(f"Value error while parsing event: {e}")
-                return None
+            self.logger.info(
+                "Parsed odds for game %s vs %s: Home: %f, Away: %f, Draw: %f",
+                home_team,
+                away_team,
+                home_odd,
+                away_odd,
+                draw_odd,
+            )
 
-        except KeyError as e:
+            return GameOdd(
+                game=game,
+                bet_house=self.bet_house,
+                home_odd=home_odd,
+                away_odd=away_odd,
+                draw_odd=draw_odd,
+            )
 
-            print(f"Key error while parsing event: {e}")
+        except (KeyError, ValueError) as e:
+            print(f"Error while parsing event: {e}")
             return None
 
-    def get_team_from_event(self, t: dict[str, Any]) -> Optional[Team]:
+    def get_team_from_event(self, t: str) -> Optional[Team]:
         try:
             teamname = unidecode(t).lower()
-            print(teamname, "teamname")
             team = Team.objects.filter(name__icontains=teamname).first()
-            if not team:
-                # Se não encontrar, buscar o nome mais similar usando Levenshtein
-                all_teams = Team.objects.values_list('normalized_name', flat=True)
-                most_similar_team = get_most_similar_name(teamname, all_teams)[0]
-                # ou seja 4 alteracoes
-                if most_similar_team:
-                    team = Team.objects.filter(normalized_name__icontains=most_similar_team).first()
-                    self.logger.info(
-                        f"Equipe '{teamname}' não encontrada. Usando equipe similar: '{most_similar_team}'.")
-                    return team
-                else:
-                    self.logger.warning(f"Could not find team similar to {teamname}")
-                    return None
-            return team
+
+            if team:
+                return team
+
+            all_teams = Team.objects.values_list("normalized_name", flat=True)
+            most_similar_team = get_most_similar_name(teamname, all_teams)[0]
+
+            if most_similar_team:
+                team = Team.objects.filter(
+                    normalized_name__icontains=most_similar_team
+                ).first()
+                self.logger.info(
+                    "Team %s not found; using %s.", teamname, most_similar_team
+                )
+                return team
+
+            self.logger.warning(f"Could not find team similar to {teamname}")
+            return None
 
         except (Team.DoesNotExist, IndexError, KeyError) as e:
-            self.logger.warning("Could not find team for index %d: %s", index, e)
+            self.logger.warning("Could not find team: %s", e)
             return None
 
     def _get_all_competitions_ids(self) -> List[Any]:
