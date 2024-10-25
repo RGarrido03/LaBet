@@ -1,8 +1,6 @@
 import datetime
 from typing import Optional, Any, List
 
-import requests
-
 from app.models import *
 from app.modules.scrapper import Scrapper
 
@@ -145,12 +143,13 @@ class PlacardScrapper(Scrapper):
             },
         }
 
-        response = requests.post(self.competitions_url, headers=headers, json=data)
-        response_data = response.json()
+        response = self.make_request(
+            "POST", self.competitions_url, headers=headers, data=data
+        )
 
         competition_ids = [
             competition["CompetitionId"]
-            for competition_data in response_data["data"]["CompetitionDataList"]["List"]
+            for competition_data in response["data"]["CompetitionDataList"]["List"]
             for competition in competition_data["CompetitionList"]["List"]
         ]
         self.logger.info("Found %d competitions.", len(competition_ids))
@@ -198,5 +197,4 @@ class PlacardScrapper(Scrapper):
             },
         }
 
-        response = requests.post(self.url, headers=headers, json=data)
-        return response.json()
+        return self.make_request("POST", self.url, headers=headers, data=data)

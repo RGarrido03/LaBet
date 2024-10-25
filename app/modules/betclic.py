@@ -1,8 +1,5 @@
-import json
 from datetime import datetime
 from typing import Any
-
-import requests
 
 from app.models import Game, GameOdd
 from app.modules.scrapper import Scrapper
@@ -23,16 +20,8 @@ class BetclicScrapper(Scrapper):
 
     def scrap(self) -> list[GameOdd]:
         """Fetch data from API and parse the response."""
-        try:
-            response = requests.get(self.url)
-            response.raise_for_status()  # Ensure HTTP errors are handled
-            self.data = response.json()  # Load the response as JSON
-            self.parsed_data = self.parse_json()
-        except requests.RequestException as e:
-            self.logger.error(f"Error fetching data: {e}")
-        except json.JSONDecodeError as e:
-            self.logger.error(f"Error decoding JSON: {e}")
-        return self.parsed_data
+        self.data = self.make_request("GET", self.url)
+        return self.parse_json()
 
     def parse_event(self, event: dict[str, Any]) -> GameOdd | None:
         """Parse a single event and return a GameOdd object if valid."""

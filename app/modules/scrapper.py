@@ -1,8 +1,11 @@
 import logging
 from abc import ABC, abstractmethod
+from json import JSONDecodeError
 from typing import Optional, Any
 
+import requests
 from django.conf import settings
+from requests import RequestException
 from unidecode import unidecode
 
 from app.models import GameOdd, Team, BetHouse
@@ -61,6 +64,18 @@ class Scrapper(ABC):
         except (Team.DoesNotExist, IndexError, KeyError) as e:
             self.logger.warning("Could not find team: %s", e)
             return None
+
+    def make_request(
+        self, method: str, url: str, headers: dict[str, Any] = None, data: Any = None
+    ) -> dict[str, Any]:
+        try:
+            response = requests.request(method, url, headers=headers, json=data)
+            response.raise_for_status()
+            return response.json()
+        except RequestException as e:
+            self.logger.error(f"Error fetching data: {e}")
+        except JSONDecodeError as e:
+            self.logger.error(f"Error decoding JSON: {e}")
 
     @abstractmethod
     def scrap(self) -> list[GameOdd]:
