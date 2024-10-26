@@ -16,8 +16,8 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.urls import path, include
 
 from app import views
 
@@ -31,6 +31,7 @@ urlpatterns = [
     path("betclic_test/", views.betclic_test, name="betclic_test"),
     path("placard_test/", views.placard_test, name="placard_test"),
     path("betano_test/", views.betano_test, name="betano_test"),
-    path("combinations/<int:id>/", views.combinations, name="combinations"),
+    path("combinations/", views.combinations, name="combinations"),
+    path("combinations/<int:id>/", views.combinations_by_id, name="combinations_by_id"),
     path("__reload__/", include("django_browser_reload.urls")),
 ]
