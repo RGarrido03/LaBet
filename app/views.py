@@ -16,7 +16,17 @@ from app.utils.odds import get_best_combination
 def index(request: WSGIRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return render(request, "landing.html")
-    return render(request, "index.html")
+
+    games = Game.objects.all()
+
+    result = [
+        {"game": game.to_json(), "detail": odds}
+        for game in games
+        if (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
+        and 1 > odds.get("odd") >= request.user.tier.min_arbitrage
+    ]
+
+    return render(request, "index.html", {"games": result})
 
 
 def tier(request: WSGIRequest) -> HttpResponse:

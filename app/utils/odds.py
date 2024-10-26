@@ -40,8 +40,21 @@ def get_best_combination(
         )
 
     return {
-        "home_house": home.bet_house.to_json(),
-        "draw_house": draw.bet_house.to_json(),
-        "away_house": away.bet_house.to_json(),
+        "home": {
+            "house": home.bet_house.to_json(),
+            "odd": home.home_odd,
+        },
+        "draw": (
+            {
+                "house": draw.bet_house.to_json(),
+                "odd": draw.draw_odd,
+            }
+            if draw
+            else None
+        ),
+        "away": {
+            "house": away.bet_house.to_json(),
+            "odd": away.away_odd,
+        },
         "odd": odd,
     }
