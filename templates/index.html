@@ -1,9 +1,18 @@
 {% extends "_base.html" %}
 
 {% block content %}
-    <div class="flex gap-8 lg:gap-16 flex-col-reverse lg:flex-row px-4 lg:px-0">
-        <div class="flex-1 flex flex-col gap-2 lg:gap-4">
-            <h1 class="text-gray-900 dark:text-white text-3xl font-bold mb-2">
+    <div class="px-4 w-full lg:text-center lg:mb-8">
+        <h1 class="mb-4 text-4xl font-extrabold leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+            Welcome back, {{ user.first_name }}!
+        </h1>
+        <p class="mb-8 text-lg font-normal text-gray-500 lg:text-xl text-balance sm:px-16 lg:px-48 dark:text-gray-400">
+            Check the latest reports on how you're earning, plus new games to bet on.
+        </p>
+    </div>
+
+    <div class="flex gap-8 xl:gap-16 flex-col-reverse lg:flex-row px-4 lg:px-0">
+        <div class="flex-1 flex flex-col gap-2">
+            <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
                 Reports
             </h1>
             <div class="block p-6 border border-gray-200 rounded-xl transition-colors bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
@@ -15,8 +24,8 @@
                 </p>
             </div>
         </div>
-        <div class="flex-1 flex flex-col gap-2 lg:gap-4">
-            <h1 class="text-gray-900 dark:text-white text-3xl font-bold mb-2">
+        <div class="flex-1 flex flex-col gap-2">
+            <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
                 Available games
             </h1>
             {% if games %}
