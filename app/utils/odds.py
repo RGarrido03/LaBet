@@ -1,5 +1,3 @@
-import itertools
-
 from app.models import GameOdd, BetHouse
 
 
@@ -9,32 +7,54 @@ def calculate_arbitrage(home: GameOdd, draw: GameOdd | None, away: GameOdd) -> f
     )
 
 
-def calculate_combinations(
-    game_odds: list[GameOdd], has_draw: bool = True
-) -> list[dict[str, BetHouse | float]]:
-    combinations: list[tuple[GameOdd, ...]] = list(
-        itertools.product(game_odds, repeat=3 if has_draw else 2)
+def get_best_combination(
+    odds: list[GameOdd], debug: bool = False
+) -> dict[str, BetHouse | float] | None:
+    if debug:
+        print(odds[0].game)
+        for odd in odds:
+            print(
+                "   ",
+                odd.bet_house.name,
+                (float(odd.home_odd), float(odd.draw_odd), float(odd.away_odd)),
+            )
+
+    home = max(odds, key=lambda x: x.home_odd)
+    draw = max(odds, key=lambda x: x.draw_odd)
+    away = max(odds, key=lambda x: x.away_odd)
+    odd = float(
+        1 / home.home_odd + (1 / draw.draw_odd if draw else 0) + 1 / away.away_odd
     )
 
-    if not has_draw:
-        return [
-            {
-                "home_house": pair[0].bet_house.to_json(),
-                "draw_house": None,
-                "away_house": pair[1].bet_house.to_json(),
-                "odd": odd,
-            }
-            for pair in combinations
-            if (odd := calculate_arbitrage(pair[0], None, pair[1])) < 1
-        ]
+    if debug:
+        print(
+            "   ",
+            "Best odds combination",
+            (
+                float(home.home_odd),
+                float(draw.draw_odd) if draw else None,
+                float(away.away_odd),
+            ),
+            "=>",
+            odd,
+        )
 
-    return [
-        {
-            "home_house": pair[0].bet_house.to_json(),
-            "draw_house": pair[1].bet_house.to_json(),
-            "away_house": pair[2].bet_house.to_json(),
-            "odd": odd,
-        }
-        for pair in combinations
-        if (odd := calculate_arbitrage(pair[0], pair[1], pair[2])) < 1
-    ]
+    return {
+        "home": {
+            "house": home.bet_house.to_json(),
+            "odd": home.home_odd,
+        },
+        "draw": (
+            {
+                "house": draw.bet_house.to_json(),
+                "odd": draw.draw_odd,
+            }
+            if draw
+            else None
+        ),
+        "away": {
+            "house": away.bet_house.to_json(),
+            "odd": away.away_odd,
+        },
+        "odd": odd,
+    }

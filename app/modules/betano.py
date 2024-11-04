@@ -1,12 +1,11 @@
 import datetime
+import gzip
+import http.client
+import io
 import json
-from typing import Any, Optional, override
-import requests
+
 from app.models import *
 from app.modules.scrapper import Scrapper
-import http.client
-import gzip
-import io
 
 
 class BetanoScrapper(Scrapper):
@@ -46,13 +45,6 @@ class BetanoScrapper(Scrapper):
             "TE": "trailers",
         }
         self.conn = http.client.HTTPSConnection("www.betano.pt")
-
-    def get_or_create_bet_house(self) -> BetHouse:
-        """Retrieve or create the Betano BetHouse object."""
-        db_obj = BetHouse.objects.filter(name="Betano").first()
-        if not db_obj:
-            return BetHouse.objects.create(name="Betano", logo="", website="betano.pt")
-        return db_obj
 
     def _fetch_page(self, latest_id) -> list:
         """Fetch a page of data from the API and return it as a list of games."""

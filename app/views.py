@@ -10,13 +10,23 @@ from app.models import *
 from app.modules.betano import BetanoScrapper
 from app.modules.betclic import BetclicScrapper
 from app.modules.placard import PlacardScrapper
-from app.utils.odds import calculate_combinations
+from app.utils.odds import get_best_combination
 
 
 def index(request: WSGIRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return render(request, "landing.html")
-    return render(request, "index.html")
+
+    games = Game.objects.all()
+
+    result = [
+        {"game": game.to_json(), "detail": odds}
+        for game in games
+        if (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
+        and 1 > odds.get("odd") >= request.user.tier.min_arbitrage
+    ]
+
+    return render(request, "index.html", {"games": result})
 
 
 def tier(request: WSGIRequest) -> HttpResponse:
@@ -118,7 +128,26 @@ def betano_test(request: WSGIRequest) -> JsonResponse:
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
 
-def combinations(request: WSGIRequest, id: int) -> HttpResponse:
+def combinations(request: WSGIRequest) -> HttpResponse:
+    debug = request.GET.get("debug", False)
+    games = Game.objects.all()
+
+    result = [
+        {"game": game.to_json(), "detail": game_odds}
+        for game in games
+        if (
+            game_odds := get_best_combination(
+                GameOdd.objects.filter(game=game).all(), debug=debug
+            )
+        ).get("odd")
+        < 1
+    ]
+
+    return JsonResponse(result, safe=False)
+
+
+def combinations_by_id(request: WSGIRequest, id: int) -> HttpResponse:
+    debug = request.GET.get("debug", False)
     game = Game.objects.get(id=id)
     if not game:
         return JsonResponse({"error": "Game not found"}, status=404)
@@ -127,6 +156,6 @@ def combinations(request: WSGIRequest, id: int) -> HttpResponse:
     if not game_odds:
         return JsonResponse({"error": "No odds found for this game"}, status=404)
 
-    result = calculate_combinations(game_odds)
+    result = get_best_combination(game_odds, debug=debug)
 
     return JsonResponse(result, safe=False)
