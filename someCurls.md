@@ -39,3 +39,29 @@ curl 'https://sportsbook-betting-prod.gtdevteam.work/leagues/inplay?languageId=1
   -H 'sec-fetch-site: same-site' \
   -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
   -H 'x-auth-tenant-id: 126dc7bf-288b-4f72-9536-3aa54648c0f4'
+
+
+
+
+------- todas as ligas
+
+
+curl 'https://sportsbook-betting-prod.gtdevteam.work/sports?languageId=14&timeFilter=0' \
+  -H 'accept: */*' \
+  -H 'accept-language: pt-PT,pt;q=0.9,en-GB;q=0.8,en;q=0.7,pt-BR;q=0.6,en-US;q=0.5,es;q=0.4' \
+  -H 'cache-control: no-cache' \
+  -H 'origin: https://lebull-sportsbook-prod.gtdevteam.work' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://lebull-sportsbook-prod.gtdevteam.work/' \
+  -H 'sec-ch-ua: "Chromium";v="130", "Google Chrome";v="130", "Not?A_Brand";v="99"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "Linux"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-site' \
+  -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36' \
+  -H 'x-auth-tenant-id: 126dc7bf-288b-4f72-9536-3aa54648c0f4'
+
+
+

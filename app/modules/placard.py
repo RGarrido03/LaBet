@@ -28,7 +28,6 @@ class PlacardScrapper(Scrapper):
         for competition_id in competition_ids:
             competition_data = self._get_competition_data(competition_id)
             event_data_list = competition_data["data"]["EventDataList"]["List"]
-
             for event in event_data_list:
                 match = self.parse_event(event)
                 if match:

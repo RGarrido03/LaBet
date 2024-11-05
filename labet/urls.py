@@ -31,6 +31,7 @@ urlpatterns = [
     path("betclic_test/", views.betclic_test, name="betclic_test"),
     path("placard_test/", views.placard_test, name="placard_test"),
     path("betano_test/", views.betano_test, name="betano_test"),
+    path("lebull_test/", views.lebull_test, name="lebull_test"),
     path("combinations/", views.combinations, name="combinations"),
     path("combinations/<int:id>/", views.combinations_by_id, name="combinations_by_id"),
     path("__reload__/", include("django_browser_reload.urls")),

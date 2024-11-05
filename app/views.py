@@ -9,6 +9,7 @@ from django.shortcuts import render, redirect
 from app.models import *
 from app.modules.betano import BetanoScrapper
 from app.modules.betclic import BetclicScrapper
+from app.modules.lebull import LebullScrapper
 from app.modules.placard import PlacardScrapper
 from app.utils.odds import get_best_combination
 
@@ -121,6 +122,12 @@ def placard_test(request: WSGIRequest) -> JsonResponse:
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
 
+def lebull_test(request: WSGIRequest) -> JsonResponse:
+
+    scrapper = LebullScrapper()
+    data = scrapper.scrap()
+    return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
+
 def betano_test(request: WSGIRequest) -> JsonResponse:
 
     scrapper = BetanoScrapper()
@@ -129,18 +136,17 @@ def betano_test(request: WSGIRequest) -> JsonResponse:
 
 
 def combinations(request: WSGIRequest) -> HttpResponse:
-    debug = request.GET.get("debug", False)
+    debug = request.GET.get("debug", True)
     games = Game.objects.all()
 
     result = [
         {"game": game.to_json(), "detail": game_odds}
         for game in games
-        if (
+        if  (
             game_odds := get_best_combination(
                 GameOdd.objects.filter(game=game).all(), debug=debug
             )
-        ).get("odd")
-        < 1
+        ) and game_odds.get("odd") < 1
     ]
 
     return JsonResponse(result, safe=False)
