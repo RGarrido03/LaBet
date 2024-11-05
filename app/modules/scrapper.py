@@ -10,6 +10,7 @@ from requests import RequestException
 from unidecode import unidecode
 
 from app.models import GameOdd, Team, BetHouse, Game
+from app.utils.odds import normalize_odds
 from app.utils.similarity import get_most_similar_name
 
 
@@ -108,19 +109,25 @@ class Scrapper(ABC):
             return None
 
         date = datetime.fromisoformat(self.date_extractor(event))
-        date = datetime(2024, 11,5 , 1, 0)
+        date = datetime(2024, 11, 5, 1, 0)
 
         (game, _) = Game.objects.get_or_create(
-            home_team=team_1, away_team=team_2 , date=date
+            home_team=team_1, away_team=team_2, date=date
         )
+
+        home_odd = float(self.hodd_extractor(event))
+        draw_odd = float(self.dodd_extractor(event))
+        away_odd = float(self.aodd_extractor(event))
+
+        (home_odd, draw_odd, away_odd) = normalize_odds(home_odd, draw_odd, away_odd)
 
         try:
             return GameOdd.objects.create(
                 game=game,
                 bet_house=self.bet_house,
-                home_odd=float(self.hodd_extractor(event)),
-                draw_odd=float(self.dodd_extractor(event)),
-                away_odd=float(self.aodd_extractor(event)),
+                home_odd=home_odd,
+                draw_odd=draw_odd,
+                away_odd=away_odd,
             )
         except (KeyError, IndexError) as e:
             self.logger.error(f"Error parsing odds for event: {event}, error: {e}")

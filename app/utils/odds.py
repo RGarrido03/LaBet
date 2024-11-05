@@ -1,10 +1,18 @@
+import random
+
 from app.models import GameOdd, BetHouse
 
 
-def calculate_arbitrage(home: GameOdd, draw: GameOdd | None, away: GameOdd) -> float:
-    return float(
-        1 / home.home_odd + (1 / draw.draw_odd if draw else 0) + 1 / away.away_odd
-    )
+def normalize_odds(hodd: float, dodd: float, aodd: float) -> tuple[float, float, float]:
+    return randomize_odd(hodd), randomize_odd(dodd), randomize_odd(aodd)
+
+
+def randomize_odd(odd: float) -> float:
+    return odd + random.gauss(0, 0.2)
+
+
+def calculate_arbitrage(home: float, draw: float, away: float) -> float:
+    return 1 / home + 1 / draw + 1 / away
 
 
 def get_best_combination(
