@@ -8,8 +8,12 @@ def calculate_arbitrage(home: GameOdd, draw: GameOdd | None, away: GameOdd) -> f
 
 
 def get_best_combination(
-    odds: list[GameOdd], debug: bool = False,
+    odds: list[GameOdd],
+    debug: bool = False,
 ) -> dict[str, BetHouse | float] | None:
+    if len(odds) == 1:
+        return None
+
     if debug:
         print(odds[0].game)
         for odd in odds:
