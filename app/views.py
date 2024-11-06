@@ -44,7 +44,6 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
         bets = set(request.session[id_str])
         bets.add(request.POST.get("type"))
         request.session[id_str] = list(bets)
-        print(request.session[id_str])
         return redirect("game_by_id", id=id)
 
     game = Game.objects.get(id=id)
@@ -52,22 +51,20 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
         # TODO: 404 page
         return JsonResponse({"error": "Game not found"}, status=404)
 
-    game_odds = GameOdd.objects.filter(game=game)
-    if not game_odds:
-        # TODO: Render error page
-        return JsonResponse({"error": "No odds found for this game"}, status=404)
-
+    game_odds = GameOdd.objects.filter(game=game).all()
     odds_combination = get_best_combination(game_odds)
-    odd = odds_combination.get("odd")
-    max_bet = request.user.tier.max_wallet
     return render(
         request,
         "game_by_id.html",
         {
             "game": game,
             "combination": odds_combination,
-            "profit": 100 * (1 - odd) if odd < 1 else 100 * (odd - 1),
-            "max_bet": max_bet,
+            "profit": (
+                100 * (1 - odd)
+                if (odd := odds_combination.get("odd")) < 1
+                else 100 * (odd - 1)
+            ),
+            "max_bet": request.user.tier.max_wallet,
             "session": request.session[id_str],
         },
     )
