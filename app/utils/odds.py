@@ -1,6 +1,7 @@
 import random
+from typing import Any
 
-from app.models import GameOdd, BetHouse
+from app.models import GameOdd
 
 
 def normalize_odds(hodd: float, dodd: float, aodd: float) -> tuple[float, float, float]:
@@ -18,7 +19,7 @@ def calculate_arbitrage(home: float, draw: float, away: float) -> float:
 def get_best_combination(
     odds: list[GameOdd],
     debug: bool = False,
-) -> dict[str, BetHouse | float] | None:
+) -> dict[str, Any] | None:
     if len(odds) == 1:
         return None
 
@@ -53,19 +54,19 @@ def get_best_combination(
 
     return {
         "home": {
-            "house": home.bet_house.to_json(),
+            "house": home.bet_house,
             "odd": home.home_odd,
         },
         "draw": (
             {
-                "house": draw.bet_house.to_json(),
+                "house": draw.bet_house,
                 "odd": draw.draw_odd,
             }
             if draw
             else None
         ),
         "away": {
-            "house": away.bet_house.to_json(),
+            "house": away.bet_house,
             "odd": away.away_odd,
         },
         "odd": odd,

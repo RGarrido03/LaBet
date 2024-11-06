@@ -69,6 +69,7 @@
 
     <script>
         const betInput = document.getElementById('bet');
+        const totalInputs = document.querySelectorAll('input[name="total"]');
         const profitEuros = document.getElementById('profit_euros');
         const homeEuros = document.getElementById('home_euros');
         const drawEuros = document.getElementById('draw_euros');
@@ -82,6 +83,7 @@
             const total = h + d + a;
             const rate = betValue / total;
             const profit = (betValue - total) * rate;
+            totalInputs.forEach(input => input.value = total);
             profitEuros.textContent = (profit * rate).toFixed(2);
             homeEuros.textContent = (h * rate).toFixed(2);
             drawEuros.textContent = (d * rate).toFixed(2);

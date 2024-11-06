@@ -34,18 +34,6 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect("index")
 
-    id_str = str(id)
-
-    # Since sets aren't JSON serializable, a list cast is used to store the values
-    if not str(id) in request.session:
-        request.session[id_str] = list()
-
-    if request.method == "POST":
-        bets = set(request.session[id_str])
-        bets.add(request.POST.get("type"))
-        request.session[id_str] = list(bets)
-        return redirect("game_by_id", id=id)
-
     game = Game.objects.get(id=id)
     if not game:
         # TODO: 404 page
@@ -53,6 +41,34 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
 
     game_odds = GameOdd.objects.filter(game=game).all()
     odds_combination = get_best_combination(game_odds)
+
+    # Store bets in session and database
+    # Since sets aren't JSON serializable, a list cast is used to store the values
+    id_str = str(id)
+    if not str(id) in request.session:
+        request.session[id_str] = list()
+
+    if request.method == "POST":
+        bets = set(request.session[id_str])
+        bets.add(request.POST.get("type"))
+        request.session[id_str] = list(bets)
+
+        if all([otype in bets for otype in ["home", "draw", "away"]]):
+            # Submit the bet
+            Bet.objects.create(
+                user=request.user,
+                game=game,
+                home_bet_house=odds_combination["home"]["house"],
+                home_odd=odds_combination["home"]["odd"],
+                draw_bet_house=odds_combination["draw"]["house"],
+                draw_odd=odds_combination["draw"]["odd"],
+                away_bet_house=odds_combination["away"]["house"],
+                away_odd=odds_combination["away"]["odd"],
+                amount=request.POST.get("total"),
+            )
+
+        return redirect("game_by_id", id=id)
+
     return render(
         request,
         "game_by_id.html",
