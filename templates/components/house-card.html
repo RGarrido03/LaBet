@@ -15,11 +15,11 @@
         </a>
         <form method="post">
             {% csrf_token %}
-            <input type="hidden" name="{% render_slot slots.type %}" value="{% render_slot slots.type %}" />
-            {% if user.tier.id == tier.id %}
+            <input type="hidden" name="type" value="{% render_slot slots.type %}"/>
+            {% if slots.submitted.attributes.type in session %}
                 <button disabled
                         class="text-white bg-gray-400 dark:bg-gray-500 cursor-not-allowed font-medium rounded-lg text-sm px-5 py-2.5 text-center w-full">
-                    Bet already submitted
+                    Submitted
                 </button>
             {% else %}
                 <button type="submit"

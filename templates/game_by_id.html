@@ -47,18 +47,21 @@
                 {% house_card %}
                     {% slot type %}home{% endslot %}
                     {% slot team_name %}{{ game.home_team.name }}{% endslot %}
+                    {% slot submitted type='home' %}{% endslot %}
                 {% endhouse_card %}
             {% endwith %}
             {% with combination.draw as house %}
                 {% house_card %}
                     {% slot type %}draw{% endslot %}
                     {% slot team_name %}Draw{% endslot %}
+                    {% slot submitted type='draw' %}{% endslot %}
                 {% endhouse_card %}
             {% endwith %}
             {% with combination.away as house %}
                 {% house_card %}
                     {% slot type %}away{% endslot %}
                     {% slot team_name %}{{ game.away_team.name }}{% endslot %}
+                    {% slot submitted type='away' %}{% endslot %}
                 {% endhouse_card %}
             {% endwith %}
         </div>

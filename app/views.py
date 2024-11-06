@@ -34,6 +34,19 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect("index")
 
+    id_str = str(id)
+
+    # Since sets aren't JSON serializable, a list cast is used to store the values
+    if not str(id) in request.session:
+        request.session[id_str] = list()
+
+    if request.method == "POST":
+        bets = set(request.session[id_str])
+        bets.add(request.POST.get("type"))
+        request.session[id_str] = list(bets)
+        print(request.session[id_str])
+        return redirect("game_by_id", id=id)
+
     game = Game.objects.get(id=id)
     if not game:
         # TODO: 404 page
@@ -55,6 +68,7 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
             "combination": odds_combination,
             "profit": 100 * (1 - odd) if odd < 1 else 100 * (odd - 1),
             "max_bet": max_bet,
+            "session": request.session[id_str],
         },
     )
 
