@@ -12,8 +12,8 @@ class BetanoScrapper(Scrapper):
     def __init__(self):
         super().__init__(
             "Betano",
-            "betano.pt",
-            "https://www.betano.pt/assets/images/logo.svg",  # change
+            "https://www.betano.pt",
+            "https://feelinglucky.pt/wp-content/uploads/2024/09/betano-logo.svg",
             lambda event: event["markets"][0]["selections"][0]["fullName"],
             lambda event: event["markets"][0]["selections"][2]["fullName"],
             lambda event: datetime.datetime.fromtimestamp(
