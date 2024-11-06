@@ -46,6 +46,7 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
 
     odds_combination = get_best_combination(game_odds)
     odd = odds_combination.get("odd")
+    max_bet = request.user.tier.max_wallet
     return render(
         request,
         "game_by_id.html",
@@ -53,6 +54,7 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
             "game": game,
             "combination": odds_combination,
             "profit": 100 * (1 - odd) if odd < 1 else 100 * (odd - 1),
+            "max_bet": max_bet,
         },
     )
 

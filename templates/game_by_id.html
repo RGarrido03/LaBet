@@ -31,9 +31,17 @@
             {% if combination.odd > 1 %}
                 You can lose up to {{ profit | floatformat }}% by betting on this game.
             {% else %}
-                You can get up to {{ profit | floatformat }}% profit by betting on this game.
+                You can get up to {{ profit | floatformat }}% profit (<span id="profit_euros"></span>€) by betting on
+                this game.
             {% endif %}
         </p>
+        <div class="flex flex-col items-center mb-8">
+            <label for="bet" class="block mb-2 text-sm font-medium">
+                Bet calculator (€)
+            </label>
+            <input type="number" id="bet" max="{{ max_bet }}" value="{{ max_bet }}" required
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
+        </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {% with combination.home as house %}
                 {% house_card %}
@@ -55,4 +63,34 @@
             {% endwith %}
         </div>
     </div>
+
+    <script>
+        const betInput = document.getElementById('bet');
+        const profitEuros = document.getElementById('profit_euros');
+        const homeEuros = document.getElementById('home_euros');
+        const drawEuros = document.getElementById('draw_euros');
+        const awayEuros = document.getElementById('away_euros');
+
+        const calculateEuros = () => {
+            const betValue = parseFloat(betInput.value);
+            const h = betValue / {{ combination.home.odd }};
+            const d = betValue / {{ combination.draw.odd }};
+            const a = betValue / {{ combination.away.odd }};
+            const total = h + d + a;
+            const rate = betValue / total;
+            const profit = (betValue - total) * rate;
+            profitEuros.textContent = (profit * rate).toFixed(2);
+            homeEuros.textContent = (h * rate).toFixed(2);
+            drawEuros.textContent = (d * rate).toFixed(2);
+            awayEuros.textContent = (a * rate).toFixed(2);
+        };
+
+        calculateEuros();
+        betInput.addEventListener('input', () => {
+            if (betInput.value > {{ max_bet }}) {
+                betInput.value = {{ max_bet }};
+            }
+            calculateEuros();
+        });
+    </script>
 {% endblock content %}
