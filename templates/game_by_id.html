@@ -1,0 +1,36 @@
+{% extends "_base.html" %}
+
+{% block content %}
+    <div class="px-4 mx-auto max-w-screen-xl text-center lg:mb-8">
+        <aside class="mb-5">
+            <div class="inline-flex items-center justify-between px-1 py-1 pr-4 text-sm text-gray-700 bg-gray-100 rounded-full dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700">
+                <span class="rounded-full text-white px-3 py-1.5 mr-3 material-symbols-rounded text-base {% if combination.odd > 1 %}bg-red-600{% elif combination.odd < 0.95 %}bg-green-600{% else %}bg-blue-600{% endif %}">
+                    {% if combination.odd > 1 %}
+                        warning
+                    {% else %}
+                        info
+                    {% endif %}
+                </span>
+                <span class="text-sm font-medium">
+                    {% if combination.odd > 1 %}
+                        Stop! You will lose money.
+                    {% elif combination.odd < 0.95 %}
+                        Good choice!
+                    {% else %}
+                        Make it count!
+                    {% endif %}
+                </span>
+            </div>
+        </aside>
+        <h1 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+            {{ game.home_team }} × {{ game.away_team }}
+        </h1>
+        <p class="mb-8 text-lg font-normal text-gray-500 text-balance lg:text-xl sm:px-16 lg:px-48 dark:text-gray-400">
+            {% if combination.odd > 1 %}
+                You can lose up to {{ profit | floatformat }}% by betting on this game.
+            {% else %}
+                You can get up to {{ profit | floatformat }}% profit by betting on this game.
+            {% endif %}
+        </p>
+    </div>
+{% endblock content %}

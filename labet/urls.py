@@ -24,6 +24,7 @@ from app import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
+    path("game/<int:id>/", views.game_by_id, name="game_by_id"),
     path("tier/", views.tier, name="tier"),
     path("login/", views.login, name="login"),
     path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),

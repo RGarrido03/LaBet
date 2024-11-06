@@ -30,6 +30,33 @@ def index(request: WSGIRequest) -> HttpResponse:
     return render(request, "index.html", {"games": result})
 
 
+def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return redirect("index")
+
+    game = Game.objects.get(id=id)
+    if not game:
+        # TODO: 404 page
+        return JsonResponse({"error": "Game not found"}, status=404)
+
+    game_odds = GameOdd.objects.filter(game=game)
+    if not game_odds:
+        # TODO: Render error page
+        return JsonResponse({"error": "No odds found for this game"}, status=404)
+
+    odds_combination = get_best_combination(game_odds)
+    odd = odds_combination.get("odd")
+    return render(
+        request,
+        "game_by_id.html",
+        {
+            "game": game,
+            "combination": odds_combination,
+            "profit": 100 * (1 - odd) if odd < 1 else 100 * (odd - 1),
+        },
+    )
+
+
 def tier(request: WSGIRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect("login")
@@ -128,6 +155,7 @@ def lebull_test(request: WSGIRequest) -> JsonResponse:
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
+
 def betano_test(request: WSGIRequest) -> JsonResponse:
 
     scrapper = BetanoScrapper()
@@ -142,11 +170,12 @@ def combinations(request: WSGIRequest) -> HttpResponse:
     result = [
         {"game": game.to_json(), "detail": game_odds}
         for game in games
-        if  (
+        if (
             game_odds := get_best_combination(
                 GameOdd.objects.filter(game=game).all(), debug=debug
             )
-        ) and game_odds.get("odd") < 1
+        )
+        and game_odds.get("odd") < 1
     ]
 
     return JsonResponse(result, safe=False)
