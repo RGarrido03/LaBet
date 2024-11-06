@@ -32,5 +32,25 @@
                 You can get up to {{ profit | floatformat }}% profit by betting on this game.
             {% endif %}
         </p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {% with combination.home as house %}
+                {% house_card %}
+                    {% slot type %}home{% endslot %}
+                    {% slot team_name %}{{ game.home_team.name }}{% endslot %}
+                {% endhouse_card %}
+            {% endwith %}
+            {% with combination.draw as house %}
+                {% house_card %}
+                    {% slot type %}draw{% endslot %}
+                    {% slot team_name %}Draw{% endslot %}
+                {% endhouse_card %}
+            {% endwith %}
+            {% with combination.away as house %}
+                {% house_card %}
+                    {% slot type %}away{% endslot %}
+                    {% slot team_name %}{{ game.away_team.name }}{% endslot %}
+                {% endhouse_card %}
+            {% endwith %}
+        </div>
     </div>
 {% endblock content %}

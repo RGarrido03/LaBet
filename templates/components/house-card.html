@@ -1,0 +1,29 @@
+<div class="flex-1 flex flex-col gap-4 w-full p-4 border border-gray-200 rounded-2xl shadow sm:p-8 bg-gray-100 dark:bg-gray-800 dark:border-gray-700">
+    <img src="{{ house.house.logo }}" alt="{{ house.house.name }}" class="w-full h-8 rounded-2xl mb-4">
+    <p class="text-center text-3xl font-bold text-gray-900 dark:text-white">
+        {% render_slot slots.team_name %}
+    </p>
+    <p class="dark:text-white">[You must bet x on {{ house.house.name }}]</p>
+    <p class="dark:text-white">[Odd: {{ house.odd }}]</p>
+    <div class="grid grid-cols-2 gap-2">
+        <a href="{{ house.house.website }}"
+           class="inline-flex items-center justify-center gap-1 py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+            Open <span class="text-sm material-symbols-rounded">north_east</span>
+        </a>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="{% render_slot slots.type %}" value="{{ tier.id }}">
+            {% if user.tier.id == tier.id %}
+                <button disabled
+                        class="text-white bg-gray-400 dark:bg-gray-500 cursor-not-allowed font-medium rounded-lg text-sm px-5 py-2.5 text-center w-full">
+                    Bet already submitted
+                </button>
+            {% else %}
+                <button type="submit"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-900 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex justify-center w-full text-center">
+                    Confirm bet
+                </button>
+            {% endif %}
+        </form>
+    </div>
+</div>

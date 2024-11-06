@@ -19,3 +19,8 @@ class LandingCard(component.Component):
 @component.register("game_card")
 class GameCard(component.Component):
     template_name = "components/game-card.html"
+
+
+@component.register("house_card")
+class TierCard(component.Component):
+    template_name = "components/house-card.html"
