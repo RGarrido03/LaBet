@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 from django.forms.models import model_to_dict
 
 
@@ -138,11 +138,19 @@ class Bet(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     @property
+    def odd(self):
+        return 1 / self.home_odd + 1 / self.draw_odd + 1 / self.away_odd
+
+    @property
     def profit(self):
-        return self.amount / (
-            self.home_odd**-1
-            + (self.draw_odd**-1 if self.draw_odd else 0)
-            + self.away_odd**-1
+        return (
+            self.amount
+            / (
+                self.home_odd**-1
+                + (self.draw_odd**-1 if self.draw_odd else 0)
+                + self.away_odd**-1
+            )
+            - self.amount
         )
 
     created_at = models.DateTimeField(auto_now_add=True)

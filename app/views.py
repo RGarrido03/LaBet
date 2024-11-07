@@ -99,6 +99,14 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
     )
 
 
+def wallet(request: WSGIRequest) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    games = Bet.objects.filter(user=request.user).all()
+    return render(request, "wallet.html", {"games": games})
+
+
 def tier(request: WSGIRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect("login")

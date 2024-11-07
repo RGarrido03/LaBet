@@ -1,0 +1,42 @@
+{% extends "_base.html" %}
+
+{% block content %}
+    <div class="px-4 w-full lg:text-center lg:mb-8">
+        <h1 class="mb-4 text-4xl font-extrabold leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+            Wallet
+        </h1>
+        <p class="mb-8 text-lg font-normal text-gray-500 lg:text-xl text-balance sm:px-16 lg:px-48 dark:text-gray-400">
+            Check your current balance, and manage your transactions.
+        </p>
+    </div>
+
+    <div class="flex gap-8 xl:gap-16 flex-col-reverse lg:flex-row px-4 lg:px-0">
+        <div class="flex-1 flex flex-col gap-2">
+            <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
+                Lorem ispum dolor sit amet
+            </h1>
+            <div class="block p-6 border border-gray-200 rounded-xl transition-colors bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                    Title 1
+                </h5>
+                <p class="font-normal text-gray-700 dark:text-gray-400">
+                    Description here
+                </p>
+            </div>
+        </div>
+        <div class="flex-1 flex flex-col gap-2">
+            <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
+                History
+            </h1>
+            {% if games %}
+                {% for bet in games %}
+                    {% history_game_card %}{% endhistory_game_card %}
+                {% endfor %}
+            {% else %}
+                <p class="text-gray-700 dark:text-gray-400">
+                    No transactions yet.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}

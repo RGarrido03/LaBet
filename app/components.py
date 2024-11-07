@@ -21,6 +21,11 @@ class GameCard(component.Component):
     template_name = "components/game-card.html"
 
 
+@component.register("history_game_card")
+class HistoryGameCard(component.Component):
+    template_name = "components/history-game-card.html"
+
+
 @component.register("house_card")
 class TierCard(component.Component):
     template_name = "components/house-card.html"
