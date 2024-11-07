@@ -97,7 +97,7 @@
             const total = h + d + a;
             const rate = betValue / total;
             const profit = (betValue - total) * rate;
-            totalInputs.forEach(input => input.value = total);
+            totalInputs.forEach(input => input.value = total * rate);
             profitEuros.textContent = (profit * rate).toFixed(2);
             homeEuros.textContent = (h * rate).toFixed(2);
             drawEuros.textContent = (d * rate).toFixed(2);
