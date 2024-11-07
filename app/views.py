@@ -42,32 +42,38 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
     game_odds = GameOdd.objects.filter(game=game).all()
     odds_combination = get_best_combination(game_odds)
 
-    # Store bets in session and database
-    # Since sets aren't JSON serializable, a list cast is used to store the values
     id_str = str(id)
     if not str(id) in request.session:
-        request.session[id_str] = list()
+        request.session[id_str] = {}
 
     if request.method == "POST":
-        bets = set(request.session[id_str])
-        bets.add(request.POST.get("type"))
-        request.session[id_str] = list(bets)
+        # Update session
+        request.session[id_str][request.POST.get("type")] = float(
+            request.POST.get("odd")
+        )
+        request.session.modified = True
 
-        if all([otype in bets for otype in ["home", "draw", "away"]]):
+        if all(
+            [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
+        ):
             # Submit the bet
             Bet.objects.create(
                 user=request.user,
                 game=game,
                 home_bet_house=odds_combination["home"]["house"],
-                home_odd=odds_combination["home"]["odd"],
+                home_odd=request.session[id_str]["home"],
                 draw_bet_house=odds_combination["draw"]["house"],
-                draw_odd=odds_combination["draw"]["odd"],
+                draw_odd=request.session[id_str]["draw"],
                 away_bet_house=odds_combination["away"]["house"],
-                away_odd=odds_combination["away"]["odd"],
+                away_odd=request.session[id_str]["away"],
                 amount=request.POST.get("total"),
             )
 
+        # Prevent the form from being submitted twice upon browser refresh
         return redirect("game_by_id", id=id)
+
+    for key in request.session[id_str]:
+        odds_combination[key]["odd"] = request.session[id_str][key]
 
     return render(
         request,
@@ -80,8 +86,11 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
                 if (odd := odds_combination.get("odd")) < 1
                 else 100 * (odd - 1)
             ),
-            "max_bet": request.user.tier.max_wallet,
+            "max_bet": request.user.tier.max_wallet,  # TODO: Implement wallet
             "session": request.session[id_str],
+            "submitted": all(
+                [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
+            ),
         },
     )
 

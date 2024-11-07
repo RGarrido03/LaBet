@@ -4,9 +4,18 @@
         {% render_slot slots.team_name %}
     </p>
     <div>
-        <p class="font-medium">You must bet <span id="{% render_slot slots.type %}_euros"></span>€
-            on {{ house.house.name }}</p>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Current odd: {{ house.odd }}</p>
+        <p class="font-medium">
+            You {% if slots.submitted.attributes.type not in session %}must{% endif %} bet
+            <span id="{% render_slot slots.type %}_euros"></span>€
+            on {{ house.house.name }}
+        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+            {% if slots.submitted.attributes.type in session %}
+                Placed bet
+            {% else %}
+                Current
+            {% endif %}
+            odd: {{ house.odd }}</p>
     </div>
     <div class="grid grid-cols-2 gap-2">
         <a href="{{ house.house.website }}"
@@ -16,6 +25,7 @@
         <form method="post">
             {% csrf_token %}
             <input type="hidden" name="type" value="{% render_slot slots.type %}"/>
+            <input type="hidden" name="odd" value="{{ house.odd }}"/>
             <input type="hidden" name="total">
             {% if slots.submitted.attributes.type in session %}
                 <button disabled
