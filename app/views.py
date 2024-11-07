@@ -19,11 +19,15 @@ def index(request: WSGIRequest) -> HttpResponse:
         return render(request, "landing.html")
 
     games = Game.objects.all()
+    already_bet_games = [
+        bet.game for bet in Bet.objects.filter(user=request.user).all()
+    ]
 
     result = [
         {"game": game.to_json(), "detail": odds}
         for game in games
-        if (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
+        if game not in already_bet_games
+        and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
         and 1 > odds.get("odd") >= request.user.tier.min_arbitrage
     ]
 
