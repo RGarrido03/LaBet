@@ -17,16 +17,16 @@ from app.utils.similarity import get_most_similar_name
 # abstract class for scrapper
 class Scrapper(ABC):
     def __init__(
-        self,
-        name: str,
-        website: str,
-        logo: str,
-        hteam_extractor: Callable,
-        ateam_extractor: Callable,
-        date_extractor: Callable = None,
-        hodd_extractor: Callable = None,
-        dodd_extractor: Callable = None,
-        aodd_extractor: Callable = None,
+            self,
+            name: str,
+            website: str,
+            logo: str,
+            hteam_extractor: Callable,
+            ateam_extractor: Callable,
+            date_extractor: Callable = None,
+            hodd_extractor: Callable = None,
+            dodd_extractor: Callable = None,
+            aodd_extractor: Callable = None,
     ):
         self.name: str = name
         self.website: str = website
@@ -86,7 +86,7 @@ class Scrapper(ABC):
             return None
 
     def make_request(
-        self, method: str, url: str, headers: dict[str, Any] = None, data: Any = None
+            self, method: str, url: str, headers: dict[str, Any] = None, data: Any = None
     ) -> dict[str, Any]:
         try:
             response = requests.request(method, url, headers=headers, json=data)
@@ -122,13 +122,15 @@ class Scrapper(ABC):
         (home_odd, draw_odd, away_odd) = normalize_odds(home_odd, draw_odd, away_odd)
 
         try:
-            return GameOdd.objects.create(
+            (gameOdd, created) = GameOdd.objects.get_or_create(
                 game=game,
                 bet_house=self.bet_house,
                 home_odd=home_odd,
                 draw_odd=draw_odd,
                 away_odd=away_odd,
             )
+
+            return gameOdd if created else None
         except (KeyError, IndexError) as e:
             self.logger.error(f"Error parsing odds for event: {event}, error: {e}")
             return None
