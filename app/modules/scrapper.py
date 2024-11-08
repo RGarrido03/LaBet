@@ -122,15 +122,20 @@ class Scrapper(ABC):
         (home_odd, draw_odd, away_odd) = normalize_odds(home_odd, draw_odd, away_odd)
 
         try:
-            (gameOdd, created) = GameOdd.objects.get_or_create(
+            # check if the game already exists but the odds will always be diferent
+            # because of the normalization
+            game_odd = GameOdd.objects.filter(game=game, bet_house=self.bet_house).first()
+            if game_odd:
+                return game_odd
+
+            (game_odd, created) = GameOdd.objects.get_or_create(
                 game=game,
                 bet_house=self.bet_house,
                 home_odd=home_odd,
                 draw_odd=draw_odd,
                 away_odd=away_odd,
             )
-
-            return gameOdd if created else None
+            return game_odd if created else None
         except (KeyError, IndexError) as e:
             self.logger.error(f"Error parsing odds for event: {event}, error: {e}")
             return None
