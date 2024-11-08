@@ -104,7 +104,22 @@ def wallet(request: WSGIRequest) -> HttpResponse:
         return redirect("login")
 
     games = Bet.objects.filter(user=request.user).all()
-    return render(request, "wallet.html", {"games": games})
+    total_this_month = sum(
+        [
+            game.amount
+            for game in Bet.objects.filter(
+                user=request.user, created_at__month=datetime.datetime.now().month
+            ).all()
+        ]
+    )
+    return render(
+        request,
+        "wallet.html",
+        {
+            "games": games,
+            "remaining": request.user.tier.max_wallet - total_this_month,
+        },
+    )
 
 
 def tier(request: WSGIRequest) -> HttpResponse:
