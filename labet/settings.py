@@ -79,12 +79,12 @@ TEMPLATES = [
 ]
 
 Q_CLUSTER = {
-    'name': 'DjangORM',
+    'name': 'labet',
     'workers': 4,
     'timeout': 300,  # Aumente o timeout para 5 minutos
     'retry': 350,  # O tempo de espera antes de re-tentar uma tarefa que falhou
-    'queue_limit': 50,
-    'bulk': 10,
+    # 'queue_limit': 50,
+    # 'bulk': 10,
     'orm': 'default'
 }
 
