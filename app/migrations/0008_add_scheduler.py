@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('app', '0007_add_user_data'),
         ('django_q', '0018_task_success_index'),  # this is ugly
-        # ('django_q', get_last_migration('django_q')), # this should work but it doesn't
+        # ('django_q', get_last_migration('django_q')), # this should work, but it doesn't
     ]
 
     operations = [
