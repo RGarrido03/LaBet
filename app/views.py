@@ -174,6 +174,28 @@ def login(request: WSGIRequest) -> HttpResponse:
 
     return render(request, "login.html")
 
+def profile(request: WSGIRequest) -> HttpResponse:
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if request.method == "POST":
+        try:
+            for prop in request.POST:
+
+                if request.POST[prop]:
+                    print("prop", prop)
+                    setattr(request.user, prop, request.POST[prop])
+
+            request.user.save()
+
+            return redirect("index")
+        except IntegrityError:
+            return render(
+                request, "register.html", {"error": "Username is already taken"}
+            )
+
+    return render(request, "profile.html", {"user": request.user})
+
 
 def register(request: WSGIRequest) -> HttpResponse:
     if request.user.is_authenticated:

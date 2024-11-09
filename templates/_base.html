@@ -48,8 +48,10 @@
                  id="user-dropdown">
                 <div class="px-4 py-3">
                     {% if user.is_authenticated %}
-                        <span class="block text-sm text-gray-900 dark:text-white">{{ user.get_full_name }}</span>
-                        <span class="block text-sm text-gray-500 truncate dark:text-gray-400">{{ user.get_username }}</span>
+                        <a href="{% url 'index' %}" >
+                            <span class="block text-sm text-gray-900 dark:text-white">{{ user.get_full_name }}</span>
+                            <span class="block text-sm text-gray-500 truncate dark:text-gray-400">{{ user.get_username }}</span>
+                        </a>
                     {% else %}
                         <span class="font-semibold block text-sm text-gray-900 dark:text-white">Hello!</span>
                         <span class="block text-sm text-gray-500 truncate dark:text-gray-400">You're not signed in.</span>
@@ -64,6 +66,10 @@
                         <li>
                             <a href="{% url 'wallet' %}"
                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Wallet</a>
+                        </li>                        
+                        <li>
+                            <a href="{% url 'profile' %}"
+                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Profile</a>
                         </li>
                     </ul>
                 {% endif %}
