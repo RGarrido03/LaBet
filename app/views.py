@@ -51,10 +51,12 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
         request.session[id_str] = {}
 
     if request.method == "POST":
+
         # Update session
         request.session[id_str][request.POST.get("type")] = float(
             request.POST.get("odd")
         )
+        request.session[id_str]["total"] = float(request.POST.get("total"))
         request.session.modified = True
 
         if all(
@@ -74,10 +76,12 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
             )
 
         # Prevent the form from being submitted twice upon browser refresh
+
         return redirect("game_by_id", id=id)
 
     for key in request.session[id_str]:
-        odds_combination[key]["odd"] = request.session[id_str][key]
+        if key in ["home", "draw", "away"]:
+            odds_combination[key]["odd"] = request.session[id_str][key]
 
     return render(
         request,
@@ -113,18 +117,6 @@ def wallet(request: WSGIRequest) -> HttpResponse:
     )
     total_this_month = sum([game.amount for game in games_this_month])
 
-    # Create a chart data (list of tuples), which relate the date and the accumulated amount in a Pythonic way
-    acc_spent = 0
-    acc_profit = 0
-    chart_data = [
-        (
-            game.created_at,
-            (acc_spent := acc_spent + game.amount),
-            (acc_profit := acc_profit + game.profit + game.amount),
-        )
-        for game in games_this_month
-    ]
-
     return render(
         request,
         "wallet.html",
@@ -132,9 +124,12 @@ def wallet(request: WSGIRequest) -> HttpResponse:
             "games": games,
             "remaining": request.user.tier.max_wallet - total_this_month,
             "chart": {
-                "labels": [data[0].strftime("%d/%m/%Y") for data in chart_data],
-                "spent": [float(data[1]) for data in chart_data],
-                "profit": [float(data[2]) for data in chart_data],
+                "labels": [
+                    f"{game.game.home_team} vs {game.game.away_team}"
+                    for game in games_this_month
+                ],
+                "spent": [float(game.amount) for game in games_this_month],
+                "profit": sum(game.profit for game in games_this_month),
             },
         },
     )
@@ -153,7 +148,6 @@ def tier(request: WSGIRequest) -> HttpResponse:
         if request.user.is_authenticated:
             request.user.tier = Tier.objects.get(id=tier_id)
             request.user.save()
-
 
     return render(request, "tier.html", {"tiers": Tier.objects.all()})
 
@@ -230,7 +224,7 @@ def register(request: WSGIRequest) -> HttpResponse:
                 last_name=last_name,
                 birth_date=birth_date,
             )
-            selected_tier = request.COOKIES.get('selected_tier')
+            selected_tier = request.COOKIES.get("selected_tier")
             if selected_tier:
                 try:
                     tier_ = Tier.objects.get(id=selected_tier)

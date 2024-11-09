@@ -6,7 +6,6 @@ from app.modules.scrapper import Scrapper
 class LebullScrapper(Scrapper):
     def __init__(self):
         def aux_extractor(x):  # x[date]
-            print("PIXA", x)
             epoch, delta = x.replace("/Date(", "").replace(")/", "").split("+")
             epoch = int(epoch) / 1000
 
@@ -25,6 +24,8 @@ class LebullScrapper(Scrapper):
         )
 
     def scrap(self):
+        # FIXME RUBEN this needs refactor and i can't
+
         import requests
 
         headers = {
