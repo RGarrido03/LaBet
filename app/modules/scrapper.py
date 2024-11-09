@@ -109,7 +109,7 @@ class Scrapper(ABC):
             return None
 
         date = datetime.fromisoformat(self.date_extractor(event))
-        date = datetime(2024, 11, 5, 1, 0)
+        # date = datetime(2024, 11, 5, 1, 0)
 
         (game, _) = Game.objects.get_or_create(
             home_team=team_1, away_team=team_2, date=date

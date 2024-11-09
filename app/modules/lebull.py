@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.modules.scrapper import Scrapper
 
@@ -6,10 +6,11 @@ from app.modules.scrapper import Scrapper
 class LebullScrapper(Scrapper):
     def __init__(self):
         def aux_extractor(x):  # x[date]
-            epoch, _ = x.replace("/Date(", "").replace(")/", "").split("+")
+            print("PIXA", x)
+            epoch, delta = x.replace("/Date(", "").replace(")/", "").split("+")
             epoch = int(epoch) / 1000
 
-            return str(datetime.fromtimestamp(epoch))
+            return str(datetime.fromtimestamp(epoch) + timedelta(hours=int(delta) / 100))
 
         super().__init__(
             "Lebull",
@@ -89,10 +90,16 @@ class LebullScrapper(Scrapper):
                 headers=headers,
             )
 
-            games = response.json()[0]["games"]
+            g = response.json()
+            # check if there is any game
+            if len(g) == 0:
+                continue
+
+            games = g[0]["games"]
             # parse events
             for game in games:
-                event = self.parse_event(game)
+
+                event = self.parse_event(game) if len(game["stakeTypes"][0]["stakes"]) == 3 else None
                 if event:
                     print(event)
                     matches.append(event)

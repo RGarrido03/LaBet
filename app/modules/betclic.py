@@ -21,7 +21,8 @@ class BetclicScrapper(Scrapper):
             lambda x: odds_extractor(x, 1),
             lambda x: odds_extractor(x, 2),
         )
-        self.limit = 50
+
+        self.limit = 500
         self.bet_house = self.get_or_create_bet_house()
         self.url = f"https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit={self.limit}&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate"
 
