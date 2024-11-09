@@ -74,6 +74,10 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
             )
 
         # Prevent the form from being submitted twice upon browser refresh
+        # but dont save the bid if the user refreshes the page
+        # use session to store the bet
+
+
         return redirect("game_by_id", id=id)
 
     for key in request.session[id_str]:

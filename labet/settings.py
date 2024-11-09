@@ -149,3 +149,5 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
 
 LOG_FILE = BASE_DIR / "logs" / "LaBet.log"
+
+Q_CLUSTER_LOG_FILE = BASE_DIR / "logs" / "django_q.log"
