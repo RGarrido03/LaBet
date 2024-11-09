@@ -24,9 +24,7 @@
                 Available games
             </h1>
 
-            <!-- Controles de ordenação e filtragem -->
             <div class="flex items-center gap-4 mb-4">
-                <!-- Dropdown de Ordenação -->
                 <div class="relative">
                     <button id="sortDropdown" data-dropdown-toggle="sortMenu"
                             class="text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2">
@@ -48,7 +46,6 @@
                     </div>
                 </div>
 
-                <!-- Input para Filtragem -->
                 <input type="number" id="filterValue" placeholder="Filter value"
                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 <button onclick="filterCards()"
@@ -57,7 +54,6 @@
                 </button>
             </div>
 
-            <!-- Lista de cards -->
             <div id="cardsContainer" class="flex flex-col gap-2">
                 {% if games %}
                     {% for gameodd in games %}
@@ -111,7 +107,6 @@
                 }
             });
 
-            // Reordenar os cards no DOM
             cards.forEach(card => cardsContainer.appendChild(card));
         }
 
