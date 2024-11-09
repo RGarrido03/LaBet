@@ -44,14 +44,19 @@
         const ctx = document.getElementById('myChart');
 
         new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                labels: {{ chart.labels | safe }},
                 datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
+                    label: 'Spent money',
+                    data: {{ chart.spent | safe }},
                     borderWidth: 1
-                }]
+                }, {
+                    label: 'Profit',
+                    data: {{ chart.profit | safe }},
+                    borderWidth: 1
+                }
+                ]
             },
             options: {
                 scales: {

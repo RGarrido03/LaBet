@@ -104,20 +104,38 @@ def wallet(request: WSGIRequest) -> HttpResponse:
         return redirect("login")
 
     games = Bet.objects.filter(user=request.user).all()
-    total_this_month = sum(
-        [
-            game.amount
-            for game in Bet.objects.filter(
-                user=request.user, created_at__month=datetime.datetime.now().month
-            ).all()
-        ]
+    games_this_month = (
+        Bet.objects.filter(
+            user=request.user, created_at__month=datetime.datetime.now().month
+        )
+        .order_by("created_at")
+        .all()
     )
+    total_this_month = sum([game.amount for game in games_this_month])
+
+    # Create a chart data (list of tuples), which relate the date and the accumulated amount in a Pythonic way
+    acc_spent = 0
+    acc_profit = 0
+    chart_data = [
+        (
+            game.created_at,
+            (acc_spent := acc_spent + game.amount),
+            (acc_profit := acc_profit + game.profit + game.amount),
+        )
+        for game in games_this_month
+    ]
+
     return render(
         request,
         "wallet.html",
         {
             "games": games,
             "remaining": request.user.tier.max_wallet - total_this_month,
+            "chart": {
+                "labels": [data[0].strftime("%d/%m/%Y") for data in chart_data],
+                "spent": [float(data[1]) for data in chart_data],
+                "profit": [float(data[2]) for data in chart_data],
+            },
         },
     )
 
