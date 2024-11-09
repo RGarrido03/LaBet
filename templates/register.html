@@ -11,58 +11,82 @@
         </p>
     </div>
 
+{#    <form method="post" class="max-w-lg mx-auto flex flex-col gap-4">#}
+{#        {% csrf_token %}#}
+{#        <div class="flex gap-4">#}
+{#            <div class="flex-1">#}
+{#                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First#}
+{#                    name</label>#}
+{#                <input id="first_name" type="text" name="first_name"#}
+{#                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"#}
+{#                       required/>#}
+{#            </div>#}
+{#            <div class="flex-1">#}
+{#                <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last#}
+{#                    name</label>#}
+{#                <input id="last_name" type="text" name="last_name"#}
+{#                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"#}
+{#                       required/>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="flex gap-4">#}
+{#            <div class="flex-1">#}
+{#                <label for="username"#}
+{#                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>#}
+{#                <input id="username" type="text" name="username"#}
+{#                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"#}
+{#                       required/>#}
+{#            </div>#}
+{#            <div class="relative max-w-sm flex-1">#}
+{#                <label for="birth_date"#}
+{#                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Birth date</label>#}
+{#                <input datepicker datepicker-autohide datepicker-format="yyyy-mm-dd" id="birth_date" type="text" name="birth_date" required#}
+{#                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"/>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div>#}
+{#            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail</label>#}
+{#            <input id="email" type="email" name="email"#}
+{#                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"#}
+{#                   required/>#}
+{#        </div>#}
+{#        <div>#}
+{#            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>#}
+{#            <input type="password" id="password" name="password"#}
+{#                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"#}
+{#                   required/>#}
+{#        </div>#}
+{#        {% if error %}#}
+{#            <p class="text-red-500 text-sm mb-5">{{ error }}</p>#}
+{#        {% endif %}#}
+{#        <button type="submit"#}
+{#                class="text-white transition-colors bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">#}
+{#            Submit#}
+{#        </button>#}
+{#    </form>#}
+    
+
+{% load crispy_forms_tags %}
+
+<div class="p-2">
+    <div class="flex flex-col gap-2 mb-8">
+        <h1 class="text-3xl font-semibold text-center dark:text-white">Sign up</h1>
+        <p class="text-center dark:text-white">
+            Already have an account?
+            <a href="{% url 'login' %}" class="text-blue-700 dark:text-blue-500 hover:underline">Login here</a>
+        </p>
+    </div>
+
     <form method="post" class="max-w-lg mx-auto flex flex-col gap-4">
         {% csrf_token %}
-        <div class="flex gap-4">
-            <div class="flex-1">
-                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First
-                    name</label>
-                <input id="first_name" type="text" name="first_name"
-                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                       required/>
-            </div>
-            <div class="flex-1">
-                <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last
-                    name</label>
-                <input id="last_name" type="text" name="last_name"
-                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                       required/>
-            </div>
-        </div>
-        <div class="flex gap-4">
-            <div class="flex-1">
-                <label for="username"
-                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
-                <input id="username" type="text" name="username"
-                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                       required/>
-            </div>
-            <div class="relative max-w-sm flex-1">
-                <label for="birth_date"
-                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Birth date</label>
-                <input datepicker datepicker-autohide datepicker-format="yyyy-mm-dd" id="birth_date" type="text" name="birth_date" required
-                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
-            </div>
-        </div>
-        <div>
-            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail</label>
-            <input id="email" type="email" name="email"
-                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   required/>
-        </div>
-        <div>
-            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-            <input type="password" id="password" name="password"
-                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   required/>
-        </div>
+        {% crispy form %}
+    </form>
+
         {% if error %}
             <p class="text-red-500 text-sm mb-5">{{ error }}</p>
         {% endif %}
-        <button type="submit"
-                class="text-white transition-colors bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            Submit
-        </button>
-    </form>
+
+</div>
+
     </div>
 {% endblock content %}

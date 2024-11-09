@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
+from app.forms import LoginForm, SignupForm
 from app.models import *
 from app.modules.betano import BetanoScrapper
 from app.modules.betclic import BetclicScrapper
@@ -161,6 +162,7 @@ def tier(request: WSGIRequest) -> HttpResponse:
 def login(request: WSGIRequest) -> HttpResponse:
     if request.user.is_authenticated:
         return redirect("index")
+    form = LoginForm()
 
     if request.method == "POST":
         username = request.POST["username"]
@@ -170,9 +172,9 @@ def login(request: WSGIRequest) -> HttpResponse:
             auth_login(request, user)
             return redirect("index")
         else:
-            return render(request, "login.html", {"error": "Invalid credentials"})
+            return render(request, "login.html", {"error": "Invalid credentials", "form": form})
 
-    return render(request, "login.html")
+    return render(request, "login.html", {"form": form})
 
 
 def profile(request: WSGIRequest) -> HttpResponse:
@@ -204,7 +206,7 @@ def about(request: WSGIRequest) -> HttpResponse:
 def register(request: WSGIRequest) -> HttpResponse:
     if request.user.is_authenticated:
         return redirect("index")
-
+    form = SignupForm()
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
@@ -219,7 +221,8 @@ def register(request: WSGIRequest) -> HttpResponse:
             return render(
                 request,
                 "register.html",
-                {"error": "You must be over 18 years old to register"},
+                {"error": "You must be over 18 years old to register", "form": form},
+
             )
 
         try:
@@ -243,10 +246,10 @@ def register(request: WSGIRequest) -> HttpResponse:
             return login(request)
         except IntegrityError:
             return render(
-                request, "register.html", {"error": "Username is already taken"}
+                request, "register.html", {"error": "Username is already taken", "form": form}
             )
 
-    return render(request, "register.html")
+    return render(request, "register.html", {"form": form})
 
 
 def betclic_test(request: WSGIRequest) -> JsonResponse:
