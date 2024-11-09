@@ -51,10 +51,12 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
         request.session[id_str] = {}
 
     if request.method == "POST":
+
         # Update session
         request.session[id_str][request.POST.get("type")] = float(
             request.POST.get("odd")
         )
+        request.session[id_str]["total"] = float(request.POST.get("total"))
         request.session.modified = True
 
         if all(
@@ -74,14 +76,12 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
             )
 
         # Prevent the form from being submitted twice upon browser refresh
-        # but dont save the bid if the user refreshes the page
-        # use session to store the bet
-
 
         return redirect("game_by_id", id=id)
 
     for key in request.session[id_str]:
-        odds_combination[key]["odd"] = request.session[id_str][key]
+        if key in ["home", "draw", "away"]:
+            odds_combination[key]["odd"] = request.session[id_str][key]
 
     return render(
         request,
