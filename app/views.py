@@ -141,14 +141,20 @@ def wallet(request: WSGIRequest) -> HttpResponse:
 
 
 def tier(request: WSGIRequest) -> HttpResponse:
-    if not request.user.is_authenticated:
-        return redirect("login")
+    # FIXME RUBEN, see this please
+    # removi pq temos de poder aceder aos tiers sem estar logado para o user saber ao que vai
+
+    # if not request.user.is_authenticated:
+    #     return redirect("login")
+    response = render(request, "tier.html", {"tiers": Tier.objects.all()})
 
     if request.method == "POST":
         tier_id = request.POST["tier"]
-        request.user.tier = Tier.objects.get(id=tier_id)
-        request.user.save()
-        return render(request, "tier.html", {"tiers": Tier.objects.all()})
+        if request.user.is_authenticated:
+            request.user.tier = Tier.objects.get(id=tier_id)
+            request.user.save()
+
+
     return render(request, "tier.html", {"tiers": Tier.objects.all()})
 
 
@@ -191,7 +197,7 @@ def register(request: WSGIRequest) -> HttpResponse:
             )
 
         try:
-            User.objects.create_user(
+            user = User.objects.create_user(
                 username,
                 email,
                 password,
@@ -199,6 +205,15 @@ def register(request: WSGIRequest) -> HttpResponse:
                 last_name=last_name,
                 birth_date=birth_date,
             )
+            selected_tier = request.COOKIES.get('selected_tier')
+            if selected_tier:
+                try:
+                    tier_ = Tier.objects.get(id=selected_tier)
+                    user.tier = tier_
+                    user.save()
+                except Tier.DoesNotExist:
+                    pass
+
             return login(request)
         except IntegrityError:
             return render(
