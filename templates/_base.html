@@ -16,6 +16,10 @@
             a, button, input, select, textarea {
                 @apply transition-colors;
             }
+
+            .apexcharts-datalabels-group .apexcharts-text.apexcharts-datalabel-value {
+                @apply dark:!fill-white;
+            }
         }
     </style>
 </head>
@@ -23,13 +27,12 @@
 <body class="dark:bg-gray-900">
 
 
-<nav class="bg-white border-gray-200 dark:bg-gray-900 container mx-auto">
+<nav class="bg-white border-gray-200 dark:bg-gray-900 container mx-auto px-4 lg:px-0">
     <div class="flex flex-wrap items-center justify-between py-4">
         <a href="{% url 'index' %}" class="flex items-center space-x-3 rtl:space-x-reverse">
             <img src="https://flowbite.com/docs/images/logo.svg" class="h-8" alt="LaBet Logo"/>
             <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">LaBet</span>
         </a>
-
 
         <div class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
             <button type="button"
@@ -97,7 +100,7 @@
     </div>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <div class="container mx-auto mt-8">
     {% block content %}

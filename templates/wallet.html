@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 
 {% block content %}
-    <div class="flex gap-8 xl:gap-16 flex-col-reverse lg:flex-row px-4 lg:px-0">
+    <div class="flex gap-8 xl:gap-16 flex-col lg:flex-row px-4 lg:px-0">
         <div class="flex-1 text-gray-900 dark:text-white flex flex-col gap-8">
             <div>
                 <h1 class="mb-4 text-4xl font-extrabold leading-none md:text-5xl lg:text-6xl">
@@ -20,10 +20,20 @@
                 </div>
                 <p class="text-gray-500 dark:text-gray-400">remaining this month</p>
             </div>
-            <div class="p-6 border border-gray-200 rounded-xl transition-colors bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                <canvas id="myChart" class="w-full"></canvas>
+            <div class="border border-gray-200 dark:border-gray-700 w-full bg-gray-100 rounded-xl shadow dark:bg-gray-800 p-4 md:p-6">
+                <div class="flex justify-between mb-3">
+                    <div class="flex justify-center items-center">
+                        <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white pe-1">
+                            Usage this month
+                        </h5>
+                    </div>
+                </div>
+
+                <!-- Donut Chart -->
+                <div class="pt-6" id="donut-chart"></div>
             </div>
         </div>
+
         <div class="flex-1 flex flex-col gap-2">
             <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
                 History
@@ -41,30 +51,93 @@
     </div>
 
     <script>
-        const ctx = document.getElementById('myChart');
+        let position = "bottom";
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
+        const getChartOptions = () => {
+            return {
+                series: {{ chart.spent | safe }},
+                colors: ["#1C64F2", "#16BDCA", "#FDBA8C", "#E74694"],
+                chart: {
+                    height: 320,
+                    width: "100%",
+                    type: "donut",
+                },
+                stroke: {
+                    colors: ["transparent"],
+                    lineCap: "",
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            labels: {
+                                show: true,
+                                name: {
+                                    show: true,
+                                    offsetY: 20,
+                                },
+                                total: {
+                                    showAlways: true,
+                                    show: true,
+                                    label: "earned this month",
+                                    formatter: () => {{chart.profit | floatformat:2 }} + '€',
+                                },
+                                value: {
+                                    show: true,
+                                    offsetY: -20,
+                                    formatter: (value) => value + "€",
+                                },
+                            },
+                            size: "80%",
+                        },
+                    },
+                },
+                grid: {
+                    padding: {
+                        top: -2,
+                    },
+                },
                 labels: {{ chart.labels | safe }},
-                datasets: [{
-                    label: 'Spent money',
-                    data: {{ chart.spent | safe }},
-                    borderWidth: 1
-                }, {
-                    label: 'Profit',
-                    data: {{ chart.profit | safe }},
-                    borderWidth: 1
-                }
-                ]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+                dataLabels: {
+                    enabled: false,
+                },
+                legend: {
+                    position: position,
+                },
+                yaxis: {
+                    labels: {
+                        formatter: (value) => value + "€",
+                    },
+                },
+                xaxis: {
+                    labels: {
+                        formatter: (value) => value + "€",
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                },
             }
-        });
+        }
+
+        if (document.getElementById("donut-chart") && typeof ApexCharts !== 'undefined') {
+            const updatePosition = () => {
+                const largeScreenQuery = window.matchMedia("(min-width: 768px)");
+
+                if (largeScreenQuery.matches) {
+                    position = "right";
+                } else {
+                    position = "bottom";
+                }
+
+                const chart = new ApexCharts(document.getElementById("donut-chart"), getChartOptions());
+                chart.render();
+            }
+
+            updatePosition();
+            window.addEventListener("resize", updatePosition);
+        }
     </script>
 {% endblock content %}
