@@ -197,6 +197,9 @@ def profile(request: WSGIRequest) -> HttpResponse:
     return render(request, "profile.html", {"user": request.user})
 
 
+def about(request: WSGIRequest) -> HttpResponse:
+    return render(request, "about.html")
+
 def register(request: WSGIRequest) -> HttpResponse:
     if request.user.is_authenticated:
         return redirect("index")

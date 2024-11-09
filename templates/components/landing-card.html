@@ -6,7 +6,7 @@
     </a>
     <h2 class="text-gray-900 dark:text-white text-3xl font-extrabold mb-2">{% render_slot slots.title %}</h2>
     <p class="text-lg font-normal text-gray-500 dark:text-gray-400 mb-4">{% render_slot slots.content %}</p>
-    <a href="#" class="text-blue-600 dark:text-blue-500 font-medium text-lg inline-flex items-center">
+    <a href="{% url "about" %}" class="text-blue-600 dark:text-blue-500 font-medium text-lg inline-flex items-center">
         <span class="hover:underline">Read more</span>
         <span class="material-symbols-rounded text-base ml-1">arrow_forward</span>
     </a>
