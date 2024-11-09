@@ -23,13 +23,19 @@ def index(request: WSGIRequest) -> HttpResponse:
         bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
 
-    result = [
-        {"game": game.to_json(), "detail": odds}
-        for game in games
-        if game not in already_bet_games
-        and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
-        and 1 > odds.get("odd") >= request.user.tier.min_arbitrage
-    ]
+    # this is beautyful
+    # result = [
+    #     {"game": game.to_json(), "detail": odds}
+    #     for game in games
+    #     if game not in already_bet_games
+    #     and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
+    #     and 1 > odds.get("odd") >= request.user.tier.min_arbitrage
+    # ]
+    result = [{"game": game.to_json(), "detail": odds}
+              for game in games
+              if game not in already_bet_games
+              and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
+              and odds.get("odd") >= request.user.tier.min_arbitrage]
 
     return render(request, "index.html", {"games": result})
 
@@ -60,7 +66,7 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
         request.session.modified = True
 
         if all(
-            [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
+                [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
         ):
             # Submit the bet
             Bet.objects.create(
@@ -168,6 +174,7 @@ def login(request: WSGIRequest) -> HttpResponse:
 
     return render(request, "login.html")
 
+
 def profile(request: WSGIRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect("login")
@@ -207,7 +214,7 @@ def register(request: WSGIRequest) -> HttpResponse:
         birth_date = request.POST["birth_date"]
 
         if datetime.date.fromisoformat(
-            birth_date
+                birth_date
         ) > datetime.date.today() - datetime.timedelta(days=365 * 18):
             return render(
                 request,
@@ -260,21 +267,18 @@ def betclic_test(request: WSGIRequest) -> JsonResponse:
 
 
 def placard_test(request: WSGIRequest) -> JsonResponse:
-
     scrapper = PlacardScrapper()
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
 
 def lebull_test(request: WSGIRequest) -> JsonResponse:
-
     scrapper = LebullScrapper()
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
 
 def betano_test(request: WSGIRequest) -> JsonResponse:
-
     scrapper = BetanoScrapper()
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
@@ -288,11 +292,11 @@ def combinations(request: WSGIRequest) -> HttpResponse:
         {"game": game.to_json(), "detail": game_odds}
         for game in games
         if (
-            game_odds := get_best_combination(
-                GameOdd.objects.filter(game=game).all(), debug=debug
-            )
-        )
-        and game_odds.get("odd") < 1
+               game_odds := get_best_combination(
+                   GameOdd.objects.filter(game=game).all(), debug=debug
+               )
+           )
+           and game_odds.get("odd") < 1
     ]
 
     return JsonResponse(result, safe=False)

@@ -23,17 +23,53 @@
             <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
                 Available games
             </h1>
-            {% if games %}
-                {% for gameodd in games %}
-                    {% game_card %}{% endgame_card %}
-                {% endfor %}
-            {% else %}
-                <p class="text-gray-700 dark:text-gray-400">
-                    No games found.
-                </p>
-            {% endif %}
+
+            <div class="flex items-center gap-4 mb-4">
+                <div class="relative">
+                    <button id="sortDropdown" data-dropdown-toggle="sortMenu"
+                            class="text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2">
+                        Sort by
+                    </button>
+                    <div id="sortMenu" class="hidden z-10 bg-white dark:bg-gray-700 rounded-lg shadow-lg w-48">
+                        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="sortDropdown">
+                            <li>
+                                <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                        onclick="sortCards('asc')">Lowest to Highest
+                                </button>
+                            </li>
+                            <li>
+                                <button class="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                        onclick="sortCards('desc')">Highest to Lowest
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <input type="number" id="filterValue" placeholder="Filter value"
+                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <button onclick="filterCards()"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    Apply Filter
+                </button>
+            </div>
+
+            <div id="cardsContainer" class="flex flex-col gap-2">
+                {% if games %}
+                    {% for gameodd in games %}
+                        <div class="game-card" data-value="{{ gameodd.detail.odd }}">
+                            {% game_card %}{% endgame_card %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-gray-700 dark:text-gray-400">
+                        No games found.
+                    </p>
+                {% endif %}
+            </div>
         </div>
     </div>
+
     <script>
         const ctx = document.getElementById('myChart');
 
@@ -55,5 +91,39 @@
                 }
             }
         });
+
+        function sortCards(order) {
+            const cardsContainer = document.getElementById('cardsContainer');
+            const cards = Array.from(cardsContainer.getElementsByClassName('game-card'));
+
+            cards.sort((a, b) => {
+                const valueA = parseFloat(a.getAttribute('data-value'));
+                const valueB = parseFloat(b.getAttribute('data-value'));
+
+                if (order === 'asc') {
+                    return valueA - valueB;
+                } else {
+                    return valueB - valueA;
+                }
+            });
+
+            cards.forEach(card => cardsContainer.appendChild(card));
+        }
+
+        function filterCards() {
+            const filterValue = parseFloat(document.getElementById('filterValue').value);
+            const cards = document.getElementsByClassName('game-card');
+
+            Array.from(cards).forEach(card => {
+                const value = parseFloat(card.getAttribute('data-value'));
+                if (isNaN(filterValue) || value >= filterValue) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+
     </script>
 {% endblock content %}
