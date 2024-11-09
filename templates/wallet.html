@@ -10,9 +10,7 @@
                 <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">
                     Check your current balance, and manage your transactions.
                 </p>
-            </div>
-            <div>
-                <div class="flex items-baseline text-gray-900 dark:text-white">
+                <div class="flex items-baseline text-gray-900 dark:text-white ">
                     <span class="text-4xl font-extrabold tracking-tight">{{ remaining | add:"0" }}</span>
                     <span class="ms-1 text-xl font-normal text-gray-500 dark:text-gray-400">
                         / {{ request.user.tier.max_wallet | add:"0" }}€
@@ -20,34 +18,43 @@
                 </div>
                 <p class="text-gray-500 dark:text-gray-400">remaining this month</p>
             </div>
-            <div class="border border-gray-200 dark:border-gray-700 w-full bg-gray-100 rounded-xl shadow dark:bg-gray-800 p-4 md:p-6">
-                <div class="flex justify-between mb-3">
-                    <div class="flex justify-center items-center">
-                        <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white pe-1">
-                            Usage this month
-                        </h5>
+
+
+            <div class="flex gap-5 flex-col md:flex-row">
+                <div class="md:w-4/6 lg:w-3/5 border border-gray-200 dark:border-gray-700 bg-gray-100 rounded-xl shadow dark:bg-gray-800 p-4 md:p-6">
+                    <div class="flex justify-between mb-3">
+                        <div class="flex justify-center items-center">
+                            <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white pe-1">
+                                Usage this month
+                            </h5>
+                        </div>
                     </div>
+
+                    <!-- Donut Chart -->
+                    <div class="pt-6" id="donut-chart"></div>
+
                 </div>
+                <div class=" flex-1 flex flex-col gap-2 border border-gray-200 dark:border-gray-700 bg-gray-100 rounded-xl shadow dark:bg-gray-800 p-4 md:p-6">
+                    <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
+                        History
+                    </h1>
+                <div class="overflow-y-scroll flex flex-col h-[400px]">
+                    {% if games %}
+                        {% for bet in games %}
+                            {% history_game_card %}{% endhistory_game_card %}
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-gray-700 dark:text-gray-400">
+                            No transactions yet.
+                        </p>
+                    {% endif %}
 
-                <!-- Donut Chart -->
-                <div class="pt-6" id="donut-chart"></div>
+                </div>
+                </div>
             </div>
+
         </div>
 
-        <div class="flex-1 flex flex-col gap-2">
-            <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
-                History
-            </h1>
-            {% if games %}
-                {% for bet in games %}
-                    {% history_game_card %}{% endhistory_game_card %}
-                {% endfor %}
-            {% else %}
-                <p class="text-gray-700 dark:text-gray-400">
-                    No transactions yet.
-                </p>
-            {% endif %}
-        </div>
     </div>
 
     <script>
