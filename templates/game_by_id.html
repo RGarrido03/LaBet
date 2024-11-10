@@ -2,6 +2,7 @@
 
 {% block content %}
     <div class="px-4 mx-auto max-w-screen-xl text-center lg:mb-8 text-gray-700 dark:text-white">
+
         <aside class="mb-5">
             <div class="inline-flex items-center justify-between px-1 py-1 pr-4 text-sm text-gray-700 bg-gray-100 rounded-full dark:bg-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700">
                 <span class="rounded-full text-white px-3 py-1.5 mr-3 material-symbols-rounded text-base {% if combination.odd > 1 %}bg-red-600{% elif combination.odd < 0.95 %}bg-green-600{% else %}bg-blue-600{% endif %}">
@@ -35,7 +36,7 @@
                 </span>
             {% endif %}
             {% if combination.odd > 1 %}
-                You {% if session %}will{% else %}can{% endif %} lose up to {{ profit | floatformat }}% by betting on
+                You {% if session %}will{% else %}can{% endif %} lose up to {{ profit | floatformat }}% (<span id="profit_euros"></span>€) by betting on
                 this game.
             {% else %}
                 You {% if session %}will{% else %}can{% endif %} get up to {{ profit | floatformat }}% profit
@@ -113,5 +114,8 @@
             }
             calculateEuros();
         });
+        
+        
+       
     </script>
 {% endblock content %}

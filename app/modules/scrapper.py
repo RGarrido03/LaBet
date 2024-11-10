@@ -89,6 +89,9 @@ class Scrapper(ABC):
             self, method: str, url: str, headers: dict[str, Any] = None, data: Any = None
     ) -> dict[str, Any]:
         try:
+            proxies = {
+                'https': 'http://20.111.54.16:8123'
+            }
             response = requests.request(method, url, headers=headers, json=data)
             response.raise_for_status()
             return response.json()

@@ -1,6 +1,10 @@
 {% extends "_base.html" %}
 
 {% block content %}
+    <button onclick="goBack()" class="text-blue-500 underline">
+        Go Back
+    </button>
+
     <div class="px-4 w-full lg:text-center lg:mb-8">
         <h1 class="mb-4 text-4xl font-extrabold leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
             Plans
@@ -14,4 +18,6 @@
             {% tier_card %}{% endtier_card %}
         {% endfor %}
     </div>
+
+
 {% endblock content %}
