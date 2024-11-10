@@ -1,4 +1,5 @@
 import datetime
+import itertools
 
 from django.contrib.auth import authenticate, login as auth_login
 from django.core.handlers.wsgi import WSGIRequest
@@ -24,14 +25,54 @@ def index(request: WSGIRequest) -> HttpResponse:
         bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
 
+    result = [
+        {"game": game.to_json(), "detail": odds}
+        for game in games
+        if game not in already_bet_games
+        and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
+        and odds.get("odd") >= request.user.tier.min_arbitrage
+    ]
 
-    result = [{"game": game.to_json(), "detail": odds}
-              for game in games
-              if game not in already_bet_games
-              and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
-              and odds.get("odd") >= request.user.tier.min_arbitrage]
+    chart_data = [
+        (
+            key,
+            round(float(sum(x.amount for x in g1)), 2),
+            round(float(sum(x.profit for x in g2)), 2),
+        )
+        for key, group in itertools.groupby(
+            Bet.objects.filter(user=request.user).order_by("created_at"),
+            key=lambda bet: bet.created_at.strftime("%Y-%m"),
+        )
+        for g1, g2 in [itertools.tee(group)]
+    ]
 
-    return render(request, "index.html", {"games": result})
+    months = [
+        (datetime.datetime.now() - datetime.timedelta(days=30 * i)).strftime("%Y-%m")
+        for i in range(2, -1, -1)
+    ]
+
+    data_dict = {key: (amount, profit) for key, amount, profit in chart_data}
+    chart_data = [(month, *data_dict.get(month, (0, 0))) for month in months]
+
+    print(chart_data)
+
+    return render(
+        request,
+        "index.html",
+        {
+            "games": result,
+            "chart": {
+                "spent": [
+                    {"x": x[0], "y": x[1] if x[1] != 0 else 2, "meta": {"value": x[1]}}
+                    for x in chart_data
+                ],
+                "profit": [
+                    {"x": x[0], "y": x[2] if x[2] != 0 else 2, "meta": {"value": x[2]}}
+                    for x in chart_data
+                ],
+            },
+        },
+    )
 
 
 def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
@@ -60,7 +101,7 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
         request.session.modified = True
 
         if all(
-                [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
+            [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
         ):
             # Submit the bet
             Bet.objects.create(
@@ -165,7 +206,9 @@ def login(request: WSGIRequest) -> HttpResponse:
             auth_login(request, user)
             return redirect("index")
         else:
-            return render(request, "login.html", {"error": "Invalid credentials", "form": form})
+            return render(
+                request, "login.html", {"error": "Invalid credentials", "form": form}
+            )
 
     return render(request, "login.html", {"form": form})
 
@@ -189,7 +232,9 @@ def profile(request: WSGIRequest) -> HttpResponse:
             return redirect("index")
         except IntegrityError:
             return render(
-                request, "register.html", {"error": "Username is already taken", "form": form}
+                request,
+                "register.html",
+                {"error": "Username is already taken", "form": form},
             )
 
     return render(request, "profile.html", {"form": form})
@@ -197,6 +242,7 @@ def profile(request: WSGIRequest) -> HttpResponse:
 
 def about(request: WSGIRequest) -> HttpResponse:
     return render(request, "about.html")
+
 
 def register(request: WSGIRequest) -> HttpResponse:
     if request.user.is_authenticated:
@@ -211,13 +257,12 @@ def register(request: WSGIRequest) -> HttpResponse:
         birth_date = request.POST["birth_date"]
 
         if datetime.date.fromisoformat(
-                birth_date
+            birth_date
         ) > datetime.date.today() - datetime.timedelta(days=365 * 18):
             return render(
                 request,
                 "register.html",
                 {"error": "You must be over 18 years old to register", "form": form},
-
             )
 
         try:
@@ -249,7 +294,9 @@ def register(request: WSGIRequest) -> HttpResponse:
             return login(request)
         except IntegrityError:
             return render(
-                request, "register.html", {"error": "Username is already taken", "form": form}
+                request,
+                "register.html",
+                {"error": "Username is already taken", "form": form},
             )
 
     return render(request, "register.html", {"form": form})
@@ -273,18 +320,21 @@ def betclic_test(request: WSGIRequest) -> JsonResponse:
 
 
 def placard_test(request: WSGIRequest) -> JsonResponse:
+
     scrapper = PlacardScrapper()
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
 
 def lebull_test(request: WSGIRequest) -> JsonResponse:
+
     scrapper = LebullScrapper()
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
 
 def betano_test(request: WSGIRequest) -> JsonResponse:
+
     scrapper = BetanoScrapper()
     data = scrapper.scrap()
     return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
@@ -298,11 +348,11 @@ def combinations(request: WSGIRequest) -> HttpResponse:
         {"game": game.to_json(), "detail": game_odds}
         for game in games
         if (
-               game_odds := get_best_combination(
-                   GameOdd.objects.filter(game=game).all(), debug=debug
-               )
-           )
-           and game_odds.get("odd") < 1
+            game_odds := get_best_combination(
+                GameOdd.objects.filter(game=game).all(), debug=debug
+            )
+        )
+        and game_odds.get("odd") < 1
     ]
 
     return JsonResponse(result, safe=False)

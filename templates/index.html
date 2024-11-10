@@ -15,8 +15,8 @@
             <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
                 Reports
             </h1>
-            <div class="block p-6 border border-gray-200 rounded-xl transition-colors bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                <canvas id="myChart" class="w-full"></canvas>
+            <div class="border border-gray-200 dark:border-gray-700 w-full bg-gray-100 rounded-xl shadow dark:bg-gray-800 pt-4 pl-4 md:p-6">
+                <div id="column-chart"></div>
             </div>
         </div>
         <div class="flex-1 flex flex-col gap-2">
@@ -44,25 +44,24 @@
                         </li>
                     </ul>
                 </div>
-             <button id="sortDropdown" data-dropdown-toggle="filterMenu"
+                <button id="sortDropdown" data-dropdown-toggle="filterMenu"
                         class="text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-1/2 hover:bg-gray-50 dark:hover:bg-gray-700">
                     Filter by
                 </button>
-            <div id="filterMenu" class="hidden z-10 bg-white dark:bg-gray-700 rounded-lg shadow-lg flex flex-col gap-2 p-2">
-
-
-                <input type="text" id="filterTeam" placeholder="Team name"
-                       class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                <div class="flex">
-                <select id="filterType"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-1/2">
-                    <option value="superior">Odd > Value</option>
-                    <option value="inferior">Odd < Value</option>
-                </select>
-                <input type="number" id="filterOdd" placeholder="Odd value"
-                       class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-1/2 ">
+                <div id="filterMenu"
+                     class="hidden z-10 bg-white dark:bg-gray-700 rounded-lg shadow-lg flex flex-col gap-2 p-2">
+                    <input type="text" id="filterTeam" placeholder="Team name"
+                           class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <div class="flex">
+                        <select id="filterType"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-1/2">
+                            <option value="superior">Odd > Value</option>
+                            <option value="inferior">Odd < Value</option>
+                        </select>
+                        <input type="number" id="filterOdd" placeholder="Odd value"
+                               class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-1/2 ">
+                    </div>
                 </div>
-            </div>
                 <button onclick="filterCards()"
                         class="text-white bg-blue-700 hover:bg-blue-800 rounded-lg p-2 dark:bg-blue-600 dark:hover:bg-blue-700 w-1/4">
                     Filter
@@ -86,71 +85,103 @@
     </div>
 
     <script>
-        const ctx = document.getElementById('myChart');
-
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                datasets: [{
-                    label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
-                    borderWidth: 1
-                }]
+        const options = {
+            colors: ["#1A56DB", "#FDBA8C"],
+            series: [
+                {
+                    name: "Spent",
+                    color: "#1A56DB",
+                    data: {{ chart.spent | safe }},
+                },
+                {
+                    name: "Profit",
+                    color: "#FDBA8C",
+                    data: {{ chart.profit | safe }},
+                },
+            ],
+            chart: {
+                type: "bar",
+                height: "320px",
+                fontFamily: "Inter, sans-serif",
+                toolbar: {
+                    show: false,
+                },
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: "70%",
+                    borderRadiusApplication: "end",
+                    borderRadius: 8,
+                },
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                style: {
+                    fontFamily: "Inter, sans-serif",
+                },
+                y: {
+                    formatter: (_, {seriesIndex, dataPointIndex, w}) =>
+                        Number(
+                            w.config.series[seriesIndex].data[dataPointIndex].meta.value,
+                        ),
+                }
+            },
+            states: {
+                hover: {
+                    filter: {
+                        type: "darken",
+                        value: 1,
+                    },
+                },
+            },
+            stroke: {
+                show: true,
+                width: 0,
+                colors: ["transparent"],
+            },
+            grid: {
+                show: false,
+                strokeDashArray: 4,
+                padding: {
+                    left: 2,
+                    right: 2,
+                    top: -14
+                },
+            },
+            dataLabels: {
+                enabled: false,
+            },
+            legend: {
+                show: false,
+            },
+            xaxis: {
+                floating: false,
+                labels: {
+                    show: true,
+                    style: {
+                        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
                     }
-                }
-            }
-        });
-
-        function sortCards(order) {
-            const cardsContainer = document.getElementById('cardsContainer');
-            const cards = Array.from(cardsContainer.getElementsByClassName('game-card'));
-
-            cards.sort((a, b) => {
-                const valueA = parseFloat(a.getAttribute('data-value'));
-                const valueB = parseFloat(b.getAttribute('data-value'));
-
-                if (order === 'asc') {
-                    return valueA - valueB;
-                } else {
-                    return valueB - valueA;
-                }
-            });
-
-            cards.forEach(card => cardsContainer.appendChild(card));
+                },
+                axisBorder: {
+                    show: false,
+                },
+                axisTicks: {
+                    show: false,
+                },
+            },
+            yaxis: {
+                show: false,
+            },
+            fill: {
+                opacity: 1,
+            },
         }
 
-function filterCards() {
-    const filterTeam = document.getElementById('filterTeam').value.toLowerCase();
-    const filterOdd = parseFloat(document.getElementById('filterOdd').value);
-    const filterType = document.getElementById('filterType').value;
-    const cards = document.getElementsByClassName('game-card');
-
-    Array.from(cards).forEach(card => {
-        const teamName = card.textContent.toLowerCase(); // Supõe-se que o nome da equipa esteja visível no texto da carta
-        const oddValue = parseFloat(card.getAttribute('data-value'));
-
-        // Condições de filtro
-        const matchesTeam = !filterTeam || teamName.includes(filterTeam);
-        const matchesOdd = isNaN(filterOdd) ||
-            (filterType === 'superior' && oddValue > filterOdd) ||
-            (filterType === 'inferior' && oddValue < filterOdd);
-
-        // Mostrar ou ocultar carta
-        if (matchesTeam && matchesOdd) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
+        if (document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
+            const chart = new ApexCharts(document.getElementById("column-chart"), options);
+            chart.render();
         }
-    });
-}
-
-
-
     </script>
 {% endblock content %}
