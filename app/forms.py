@@ -71,11 +71,11 @@ class SignupForm(forms.Form):
         self.helper.form_method = "post"
         self.helper.layout = Layout(
             Row(
-                Column("first_name", css_class="flex-1"),
+                Column("first_name", css_class="flex-1 mr-2"),
                 Column("last_name", css_class="flex-1"),
             ),
             Row(
-                Column("username", css_class="flex-1"),
+                Column("username", css_class="flex-1 mr-2"),
                 Column("birth_date", css_class="flex-1 relative"),
             ),
             "email",
