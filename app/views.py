@@ -6,7 +6,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
-from app.forms import LoginForm, SignupForm
+from app.forms import LoginForm, SignupForm, ProfileForm
 from app.models import *
 from app.modules.betano import BetanoScrapper
 from app.modules.betclic import BetclicScrapper
@@ -181,6 +181,8 @@ def profile(request: WSGIRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect("login")
 
+    form = ProfileForm(user=request.user)
+
     if request.method == "POST":
         try:
             for prop in request.POST:
@@ -194,10 +196,10 @@ def profile(request: WSGIRequest) -> HttpResponse:
             return redirect("index")
         except IntegrityError:
             return render(
-                request, "register.html", {"error": "Username is already taken"}
+                request, "register.html", {"error": "Username is already taken", "form": form}
             )
 
-    return render(request, "profile.html", {"user": request.user})
+    return render(request, "profile.html", {"form": form})
 
 
 def about(request: WSGIRequest) -> HttpResponse:

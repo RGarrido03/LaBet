@@ -1,54 +1,19 @@
 {% extends "_base.html" %}
 
 {% block content %}
-    <form method="post" class="max-w-lg mx-auto flex flex-col gap-4 p-2">
-        {% csrf_token %}
-         <h3 class="flex-12 pb-2 text-3xl font-semibold text-center dark:text-white">User configuration</h3>
-        <div class="flex gap-4">
-            <div class="flex-1">
-                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">First
-                    name</label>
 
-                <input id="first_name" type="text" name="first_name" placeholder="{{ user.first_name }}"
-                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                       />
-            </div>
-            <div class="flex-1">
-                <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Last
-                    name</label>
-                <input id="last_name" type="text" name="last_name" placeholder="{{ user.last_name }}"
-                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                       />
-            </div>
-        </div>
-        <div class="flex gap-4">
-            <div class="flex-1">
-                <label for="username"
-                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
-                <input id="username" type="text" name="username" placeholder="{{ user.username }}"
-                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                       />
-            </div>
-        </div>
-        <div>
-            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail</label>
-            <input id="email" type="email" name="email" placeholder="{{ user.email }}"
-                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   />
-        </div>
-        <div>
-            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-            <input type="password" id="password" name="password" placeholder="********"
-                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                   />
-        </div>
-        {% if error %}
-            <p class="text-red-500 text-sm mb-5">{{ error }}</p>
-        {% endif %}
-        <button type="submit"
-                class="text-white transition-colors bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-            Submit
-        </button>
-    </form>
+{% load crispy_forms_tags %}
+
+    <div class="max-w-lg mx-auto p-2">
+        <h3 class="text-3xl font-semibold text-center pb-4 dark:text-white">User Configuration</h3>
+        <form method="post" class="flex flex-col gap-4">
+            {% csrf_token %}
+            {% crispy form %}
+            {% if error %}
+                <p class="text-red-500 text-sm text-center">{{ error }}</p>
+            {% endif %}
+        </form>
+    </div>
+
 
 {% endblock content %}
