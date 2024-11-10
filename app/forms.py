@@ -1,7 +1,8 @@
-from crispy_forms.layout import Layout, Row, Column, Submit, Field
-from django import forms
 from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Row, Column
 from crispy_forms.layout import Submit
+from django import forms
+
 
 class LoginForm(forms.Form):
     username = forms.CharField(
@@ -24,10 +25,7 @@ class LoginForm(forms.Form):
         self.helper = FormHelper()
         self.helper.form_show_labels = True
         self.helper.form_method = "post"
-        self.helper.layout = Layout(
-            Field('Label', css_class='mb-2 text-sm font-medium text-gray-900 dark:text-white'),
-            Field('Password', css_class='mb-2 text-sm font-medium text-gray-900 dark:text-white')
-        )
+
         self.helper.add_input(Submit("submit", "Login", css_class="text-white transition-colors bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full px-5 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"))
 
 
