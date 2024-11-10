@@ -35,17 +35,17 @@ class SignupForm(forms.Form):
     first_name = forms.CharField(
         label="First Name",
         max_length=30,
-        widget=forms.TextInput(attrs={"placeholder": "John"})
+        widget=forms.TextInput(attrs={"placeholder": "John", "class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"})
     )
     last_name = forms.CharField(
         label="Last Name",
         max_length=30,
-        widget=forms.TextInput(attrs={"placeholder": "Doe"})
+        widget=forms.TextInput(attrs={"placeholder": "Doe","class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"})
     )
     username = forms.CharField(
         label="Username",
         max_length=150,
-        widget=forms.TextInput(attrs={"placeholder": "johndoe123"})
+        widget=forms.TextInput(attrs={"placeholder": "johndoe123","class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"})
     )
     birth_date = forms.DateField(
         label="Birth Date",
@@ -53,16 +53,15 @@ class SignupForm(forms.Form):
             "placeholder": "YYYY-MM-DD",
             "datepicker": "",
             "datepicker-autohide": "",
-            "datepicker-format": "yyyy-mm-dd"
-        })
+            "datepicker-format": "yyyy-mm-dd","class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"})
     )
     email = forms.EmailField(
         label="E-mail",
-        widget=forms.EmailInput(attrs={"placeholder": "example@mail.com"})
+        widget=forms.EmailInput(attrs={"placeholder": "example@mail.com","class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"})
     )
     password = forms.CharField(
         label="Password",
-        widget=forms.PasswordInput(attrs={"placeholder": "••••••••"})
+        widget=forms.PasswordInput(attrs={"placeholder": "••••••••", "class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"})
     )
 
     def __init__(self, *args, **kwargs):

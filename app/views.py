@@ -24,14 +24,7 @@ def index(request: WSGIRequest) -> HttpResponse:
         bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
 
-    # this is beautyful
-    # result = [
-    #     {"game": game.to_json(), "detail": odds}
-    #     for game in games
-    #     if game not in already_bet_games
-    #     and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
-    #     and 1 > odds.get("odd") >= request.user.tier.min_arbitrage
-    # ]
+
     result = [{"game": game.to_json(), "detail": odds}
               for game in games
               if game not in already_bet_games
@@ -242,8 +235,16 @@ def register(request: WSGIRequest) -> HttpResponse:
                     tier_ = Tier.objects.get(id=selected_tier)
                     user.tier = tier_
                     user.save()
+                    # delete cookie
+                    request.COOKIES.pop("selected_tier")
                 except Tier.DoesNotExist:
                     pass
+            else:
+                # redirect to tier selection page
+                user.save()
+                login(request)
+                response = redirect("tier")
+                return response
 
             return login(request)
         except IntegrityError:
