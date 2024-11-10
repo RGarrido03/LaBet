@@ -15,8 +15,23 @@
             <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
                 Reports
             </h1>
-            <div class="border border-gray-200 dark:border-gray-700 w-full bg-gray-100 rounded-xl shadow dark:bg-gray-800 pt-4 pl-4 md:p-6">
-                <div id="column-chart"></div>
+            <div class="relative border border-gray-200 dark:border-gray-700 w-full bg-gray-100 rounded-xl shadow dark:bg-gray-800 pt-4 pl-4 md:p-6">
+                {% if request.user.tier.charts_included %}
+                    <div id="column-chart"></div>
+                {% else %}
+                    <div class="mx-auto w-fit blur-lg opacity-50">
+                        {% include 'placeholders/bar-chart.html' %}
+                    </div>
+                    <div class="w-full h-full absolute top-0 left-0 flex flex-col gap-4 items-center justify-center">
+                        <p class="text-gray-700 text-lg dark:text-white">
+                            Your current plan doesn't include reports.
+                        </p>
+                        <a href="{% url 'tier' %}"
+                           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                            Upgrade
+                        </a>
+                    </div>
+                {% endif %}
             </div>
         </div>
         <div class="flex-1 flex flex-col gap-2">
@@ -84,104 +99,106 @@
         </div>
     </div>
 
-    <script>
-        const options = {
-            colors: ["#1A56DB", "#FDBA8C"],
-            series: [
-                {
-                    name: "Spent",
-                    color: "#1A56DB",
-                    data: {{ chart.spent | safe }},
-                },
-                {
-                    name: "Profit",
-                    color: "#FDBA8C",
-                    data: {{ chart.profit | safe }},
-                },
-            ],
-            chart: {
-                type: "bar",
-                height: "320px",
-                fontFamily: "Inter, sans-serif",
-                toolbar: {
-                    show: false,
-                },
-            },
-            plotOptions: {
-                bar: {
-                    horizontal: false,
-                    columnWidth: "70%",
-                    borderRadiusApplication: "end",
-                    borderRadius: 8,
-                },
-            },
-            tooltip: {
-                shared: true,
-                intersect: false,
-                style: {
+    {% if request.user.tier.charts_included %}
+        <script>
+            const options = {
+                colors: ["#1A56DB", "#FDBA8C"],
+                series: [
+                    {
+                        name: "Spent",
+                        color: "#1A56DB",
+                        data: {{ chart.spent | safe }},
+                    },
+                    {
+                        name: "Profit",
+                        color: "#FDBA8C",
+                        data: {{ chart.profit | safe }},
+                    },
+                ],
+                chart: {
+                    type: "bar",
+                    height: "320px",
                     fontFamily: "Inter, sans-serif",
-                },
-                y: {
-                    formatter: (_, {seriesIndex, dataPointIndex, w}) =>
-                        Number(
-                            w.config.series[seriesIndex].data[dataPointIndex].meta.value,
-                        ),
-                }
-            },
-            states: {
-                hover: {
-                    filter: {
-                        type: "darken",
-                        value: 1,
+                    toolbar: {
+                        show: false,
                     },
                 },
-            },
-            stroke: {
-                show: true,
-                width: 0,
-                colors: ["transparent"],
-            },
-            grid: {
-                show: false,
-                strokeDashArray: 4,
-                padding: {
-                    left: 2,
-                    right: 2,
-                    top: -14
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: "70%",
+                        borderRadiusApplication: "end",
+                        borderRadius: 8,
+                    },
                 },
-            },
-            dataLabels: {
-                enabled: false,
-            },
-            legend: {
-                show: false,
-            },
-            xaxis: {
-                floating: false,
-                labels: {
-                    show: true,
+                tooltip: {
+                    shared: true,
+                    intersect: false,
                     style: {
-                        cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        fontFamily: "Inter, sans-serif",
+                    },
+                    y: {
+                        formatter: (_, {seriesIndex, dataPointIndex, w}) =>
+                            Number(
+                                w.config.series[seriesIndex].data[dataPointIndex].meta.value,
+                            ),
                     }
                 },
-                axisBorder: {
+                states: {
+                    hover: {
+                        filter: {
+                            type: "darken",
+                            value: 1,
+                        },
+                    },
+                },
+                stroke: {
+                    show: true,
+                    width: 0,
+                    colors: ["transparent"],
+                },
+                grid: {
+                    show: false,
+                    strokeDashArray: 4,
+                    padding: {
+                        left: 2,
+                        right: 2,
+                        top: -14
+                    },
+                },
+                dataLabels: {
+                    enabled: false,
+                },
+                legend: {
                     show: false,
                 },
-                axisTicks: {
+                xaxis: {
+                    floating: false,
+                    labels: {
+                        show: true,
+                        style: {
+                            cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                        }
+                    },
+                    axisBorder: {
+                        show: false,
+                    },
+                    axisTicks: {
+                        show: false,
+                    },
+                },
+                yaxis: {
                     show: false,
                 },
-            },
-            yaxis: {
-                show: false,
-            },
-            fill: {
-                opacity: 1,
-            },
-        }
+                fill: {
+                    opacity: 1,
+                },
+            }
 
-        if (document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
-            const chart = new ApexCharts(document.getElementById("column-chart"), options);
-            chart.render();
-        }
-    </script>
+            if (document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
+                const chart = new ApexCharts(document.getElementById("column-chart"), options);
+                chart.render();
+            }
+        </script>
+    {% endif %}
 {% endblock content %}

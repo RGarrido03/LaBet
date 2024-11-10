@@ -33,44 +33,59 @@ def index(request: WSGIRequest) -> HttpResponse:
         and odds.get("odd") >= request.user.tier.min_arbitrage
     ]
 
-    chart_data = [
-        (
-            key,
-            round(float(sum(x.amount for x in g1)), 2),
-            round(float(sum(x.profit for x in g2)), 2),
-        )
-        for key, group in itertools.groupby(
-            Bet.objects.filter(user=request.user).order_by("created_at"),
-            key=lambda bet: bet.created_at.strftime("%Y-%m"),
-        )
-        for g1, g2 in [itertools.tee(group)]
-    ]
+    if request.user.tier.charts_included:
+        # Spagehetti code, I know
+        # I don't care, it works
+        chart_data = [
+            (
+                key,
+                round(float(sum(x.amount for x in g1)), 2),
+                round(float(sum(x.profit for x in g2)), 2),
+            )
+            for key, group in itertools.groupby(
+                Bet.objects.filter(user=request.user).order_by("created_at"),
+                key=lambda bet: bet.created_at.strftime("%Y-%m"),
+            )
+            for g1, g2 in [itertools.tee(group)]
+        ]
 
-    months = [
-        (datetime.datetime.now() - datetime.timedelta(days=30 * i)).strftime("%Y-%m")
-        for i in range(2, -1, -1)
-    ]
+        months = [
+            (datetime.datetime.now() - datetime.timedelta(days=30 * i)).strftime(
+                "%Y-%m"
+            )
+            for i in range(2, -1, -1)
+        ]
 
-    data_dict = {key: (amount, profit) for key, amount, profit in chart_data}
-    chart_data = [(month, *data_dict.get(month, (0, 0))) for month in months]
-
-    print(chart_data)
+        data_dict = {key: (amount, profit) for key, amount, profit in chart_data}
+        chart_data = [(month, *data_dict.get(month, (0, 0))) for month in months]
 
     return render(
         request,
         "index.html",
         {
             "games": result,
-            "chart": {
-                "spent": [
-                    {"x": x[0], "y": x[1] if x[1] != 0 else 2, "meta": {"value": x[1]}}
-                    for x in chart_data
-                ],
-                "profit": [
-                    {"x": x[0], "y": x[2] if x[2] != 0 else 2, "meta": {"value": x[2]}}
-                    for x in chart_data
-                ],
-            },
+            "chart": (
+                {
+                    "spent": [
+                        {
+                            "x": x[0],
+                            "y": x[1] if x[1] != 0 else 2,
+                            "meta": {"value": x[1]},
+                        }
+                        for x in chart_data
+                    ],
+                    "profit": [
+                        {
+                            "x": x[0],
+                            "y": x[2] if x[2] != 0 else 2,
+                            "meta": {"value": x[2]},
+                        }
+                        for x in chart_data
+                    ],
+                }
+                if request.user.tier.charts_included
+                else None
+            ),
         },
     )
 

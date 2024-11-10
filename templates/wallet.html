@@ -21,7 +21,7 @@
 
 
             <div class="flex gap-5 flex-col md:flex-row">
-                <div class="md:w-4/6 lg:w-3/5 border border-gray-200 dark:border-gray-700 bg-gray-100 rounded-xl shadow dark:bg-gray-800 p-4 md:p-6">
+                <div class="relative md:w-4/6 lg:w-3/5 border border-gray-200 dark:border-gray-700 bg-gray-100 rounded-xl shadow dark:bg-gray-800 p-4 md:p-6">
                     <div class="flex justify-between mb-3">
                         <div class="flex justify-center items-center">
                             <h5 class="text-xl font-bold leading-none text-gray-900 dark:text-white pe-1">
@@ -30,8 +30,22 @@
                         </div>
                     </div>
 
-                    <!-- Donut Chart -->
-                    <div class="pt-6" id="donut-chart"></div>
+                    {% if request.user.tier.charts_included %}
+                        <div class="pt-6" id="donut-chart"></div>
+                    {% else %}
+                        <div class="mx-auto pt-12 w-fit blur-lg opacity-50 scale-125">
+                            {% include 'placeholders/bar-chart.html' %}
+                        </div>
+                        <div class="w-full h-full absolute top-0 left-0 flex flex-col gap-4 items-center justify-center">
+                            <p class="text-gray-700 text-lg dark:text-white">
+                                Your current plan doesn't include reports.
+                            </p>
+                            <a href="{% url 'tier' %}"
+                                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                Upgrade
+                            </a>
+                        </div>
+                    {% endif %}
 
                 </div>
                 <div class=" flex-1 flex flex-col gap-2 border border-gray-200 dark:border-gray-700 bg-gray-100 rounded-xl shadow dark:bg-gray-800 p-4 md:p-6">
