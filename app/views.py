@@ -83,7 +83,7 @@ def index(request: WSGIRequest) -> HttpResponse:
                         for x in chart_data
                     ],
                 }
-                if request.user.tier.charts_included
+                if request.user.tier.charts_included and len(already_bet_games) > 0
                 else None
             ),
         },
@@ -179,14 +179,18 @@ def wallet(request: WSGIRequest) -> HttpResponse:
         {
             "games": games,
             "remaining": request.user.tier.max_wallet - total_this_month,
-            "chart": {
-                "labels": [
-                    f"{game.game.home_team} vs {game.game.away_team}"
-                    for game in games_this_month
-                ],
-                "spent": [float(game.amount) for game in games_this_month],
-                "profit": sum(game.profit for game in games_this_month),
-            },
+            "chart": (
+                {
+                    "labels": [
+                        f"{game.game.home_team} vs {game.game.away_team}"
+                        for game in games_this_month
+                    ],
+                    "spent": [float(game.amount) for game in games_this_month],
+                    "profit": sum(game.profit for game in games_this_month),
+                }
+                if len(games_this_month) > 0
+                else None
+            ),
         },
     )
 
