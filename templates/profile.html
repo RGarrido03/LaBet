@@ -14,6 +14,14 @@
             {% endif %}
         </form>
     </div>
-
+    <script>
+    // changing the classes of all  labels here
+    const labels = document.querySelectorAll('label');
+    labels.forEach(label => {
+        // remove all classes first
+        label.classList = [];
+        label.classList.add('mb-2', 'text-sm', 'font-medium', 'text-gray-900', 'dark:text-white');
+    });
+    </script>
 
 {% endblock content %}
