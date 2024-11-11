@@ -15,7 +15,7 @@
             <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
                 Reports
             </h1>
-            <div class="relative border border-gray-200 dark:border-gray-700 w-full bg-gray-100 rounded-xl shadow dark:bg-gray-800 pt-4 pl-4 md:p-6">
+            <div class="relative border border-gray-200 dark:border-gray-700 w-full bg-gray-100 rounded-xl dark:bg-gray-800 pt-4 pl-4 md:p-6">
                 {% if request.user.tier.charts_included and chart %}
                     <div id="column-chart"></div>
                 {% else %}
@@ -46,12 +46,12 @@
                 Available games
             </h1>
 
-            <div class="flex items-center gap-2 mb-4 p-2 border border-gray-200 rounded-xl transition-colors bg-gray-100 dark:bg-gray-800 dark:border-gray-700 ">
+            <div class="flex items-center gap-2 mb-2 p-2 border border-gray-200 rounded-full transition-colors bg-gray-100 dark:bg-gray-800 dark:border-gray-700 ">
                 <button id="sortDropdown" data-dropdown-toggle="sortMenu"
-                        class="text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-1/4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        class="text-gray-700 dark:text-white bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-full p-2 w-1/4 hover:bg-gray-50 dark:hover:bg-gray-700">
                     Sort by
                 </button>
-                <div id="sortMenu" class="hidden z-10 bg-white dark:bg-gray-700 rounded-lg shadow-lg">
+                <div id="sortMenu" class="hidden z-10 bg-white dark:bg-gray-800 rounded-xl shadow-lg border dark:border-gray-700">
                     <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="sortDropdown">
                         <li>
                             <button class=" text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
@@ -66,14 +66,14 @@
                     </ul>
                 </div>
                 <button id="sortDropdown" data-dropdown-toggle="filterMenu"
-                        class="text-gray-700 dark:text-white bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-1/2 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        class="text-gray-700 dark:text-white rounded-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 p-2 w-1/2 hover:bg-gray-50 dark:hover:bg-gray-700">
                     Filter by
                 </button>
                 <div id="filterMenu"
-                     class="hidden z-10 bg-white dark:bg-gray-700 rounded-lg shadow-lg flex flex-col gap-2 p-2">
+                     class="hidden z-10 bg-white border dark:border-gray-700 dark:bg-gray-800 rounded-xl shadow-lg flex flex-col gap-2 p-2">
                     <input type="text" id="filterTeam" placeholder="Team name"
                            class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                    <div class="flex">
+                    <div class="flex gap-2">
                         <select id="filterType"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white w-1/2">
                             <option value="superior">Odd > Value</option>
@@ -84,12 +84,12 @@
                     </div>
                 </div>
                 <button onclick="filterCards()"
-                        class="text-white bg-blue-700 hover:bg-blue-800 rounded-lg p-2 dark:bg-blue-600 dark:hover:bg-blue-700 w-1/4">
+                        class="text-white bg-blue-700 font-semibold hover:bg-blue-800 rounded-full p-2 dark:bg-blue-600 dark:hover:bg-blue-700 w-1/4">
                     Filter
                 </button>
             </div>
 
-            <div id="cardsContainer" class="flex flex-col gap-2 overflow-y-scroll h-[45lvh]">
+            <div id="cardsContainer" class="flex flex-col gap-2 overflow-y-scroll h-full">
                 {% if games %}
                     {% for gameodd in games %}
                         <div class="game-card" data-value="{{ gameodd.detail.odd }}">
