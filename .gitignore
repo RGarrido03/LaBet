@@ -17,3 +17,7 @@ media
 
 # PyCharm
 .idea/
+
+# Logs
+logs/*
+!logs/.gitkeep
