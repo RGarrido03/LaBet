@@ -107,6 +107,49 @@
 
     {% if request.user.tier.charts_included %}
         <script>
+            function sortCards(order) {
+                const cardsContainer = document.getElementById('cardsContainer');
+                const cards = Array.from(cardsContainer.getElementsByClassName('game-card'));
+
+                cards.sort((a, b) => {
+                    const valueA = parseFloat(a.getAttribute('data-value'));
+                    const valueB = parseFloat(b.getAttribute('data-value'));
+
+                    if (order === 'asc') {
+                        return valueA - valueB;
+                    } else {
+                        return valueB - valueA;
+                    }
+                });
+
+                cards.forEach(card => cardsContainer.appendChild(card));
+            }
+
+            function filterCards() {
+                const filterTeam = document.getElementById('filterTeam').value.toLowerCase();
+                const filterOdd = parseFloat(document.getElementById('filterOdd').value);
+                const filterType = document.getElementById('filterType').value;
+                const cards = document.getElementsByClassName('game-card');
+
+                Array.from(cards).forEach(card => {
+                    const teamName = card.textContent.toLowerCase(); // Supõe-se que o nome da equipa esteja visível no texto da carta
+                    const oddValue = parseFloat(card.getAttribute('data-value'));
+
+                    // Condições de filtro
+                    const matchesTeam = !filterTeam || teamName.includes(filterTeam);
+                    const matchesOdd = isNaN(filterOdd) ||
+                        (filterType === 'superior' && oddValue > filterOdd) ||
+                        (filterType === 'inferior' && oddValue < filterOdd);
+
+                    // Mostrar ou ocultar carta
+                    if (matchesTeam && matchesOdd) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
             const options = {
                 colors: ["#1A56DB", "#FDBA8C"],
                 series: [
