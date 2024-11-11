@@ -105,51 +105,52 @@
         </div>
     </div>
 
-    {% if request.user.tier.charts_included %}
-        <script>
-            function sortCards(order) {
-                const cardsContainer = document.getElementById('cardsContainer');
-                const cards = Array.from(cardsContainer.getElementsByClassName('game-card'));
 
-                cards.sort((a, b) => {
-                    const valueA = parseFloat(a.getAttribute('data-value'));
-                    const valueB = parseFloat(b.getAttribute('data-value'));
+    <script>
+        function sortCards(order) {
+            const cardsContainer = document.getElementById('cardsContainer');
+            const cards = Array.from(cardsContainer.getElementsByClassName('game-card'));
 
-                    if (order === 'asc') {
-                        return valueA - valueB;
-                    } else {
-                        return valueB - valueA;
-                    }
-                });
+            cards.sort((a, b) => {
+                const valueA = parseFloat(a.getAttribute('data-value'));
+                const valueB = parseFloat(b.getAttribute('data-value'));
 
-                cards.forEach(card => cardsContainer.appendChild(card));
-            }
+                if (order === 'asc') {
+                    return valueA - valueB;
+                } else {
+                    return valueB - valueA;
+                }
+            });
 
-            function filterCards() {
-                const filterTeam = document.getElementById('filterTeam').value.toLowerCase();
-                const filterOdd = parseFloat(document.getElementById('filterOdd').value);
-                const filterType = document.getElementById('filterType').value;
-                const cards = document.getElementsByClassName('game-card');
+            cards.forEach(card => cardsContainer.appendChild(card));
+        }
 
-                Array.from(cards).forEach(card => {
-                    const teamName = card.textContent.toLowerCase(); // Supõe-se que o nome da equipa esteja visível no texto da carta
-                    const oddValue = parseFloat(card.getAttribute('data-value'));
+        function filterCards() {
+            const filterTeam = document.getElementById('filterTeam').value.toLowerCase();
+            const filterOdd = parseFloat(document.getElementById('filterOdd').value);
+            const filterType = document.getElementById('filterType').value;
+            const cards = document.getElementsByClassName('game-card');
 
-                    // Condições de filtro
-                    const matchesTeam = !filterTeam || teamName.includes(filterTeam);
-                    const matchesOdd = isNaN(filterOdd) ||
-                        (filterType === 'superior' && oddValue > filterOdd) ||
-                        (filterType === 'inferior' && oddValue < filterOdd);
+            Array.from(cards).forEach(card => {
+                const teamName = card.textContent.toLowerCase(); // Supõe-se que o nome da equipa esteja visível no texto da carta
+                const oddValue = parseFloat(card.getAttribute('data-value'));
 
-                    // Mostrar ou ocultar carta
-                    if (matchesTeam && matchesOdd) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            }
+                // Condições de filtro
+                const matchesTeam = !filterTeam || teamName.includes(filterTeam);
+                const matchesOdd = isNaN(filterOdd) ||
+                    (filterType === 'superior' && oddValue > filterOdd) ||
+                    (filterType === 'inferior' && oddValue < filterOdd);
 
+                // Mostrar ou ocultar carta
+                if (matchesTeam && matchesOdd) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        {% if request.user.tier.charts_included and chart %}
             const options = {
                 colors: ["#1A56DB", "#FDBA8C"],
                 series: [
@@ -248,6 +249,7 @@
                 const chart = new ApexCharts(document.getElementById("column-chart"), options);
                 chart.render();
             }
-        </script>
-    {% endif %}
+        {% endif %}
+    </script>
+
 {% endblock content %}

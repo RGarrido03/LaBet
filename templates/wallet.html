@@ -58,18 +58,18 @@
                     <h1 class="text-gray-900 dark:text-white text-2xl font-bold mb-2">
                         History
                     </h1>
-                <div class="overflow-y-scroll flex flex-col h-[400px]">
-                    {% if games %}
-                        {% for bet in games %}
-                            {% history_game_card %}{% endhistory_game_card %}
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-gray-700 dark:text-gray-400">
-                            No transactions yet.
-                        </p>
-                    {% endif %}
+                    <div class="overflow-y-scroll flex flex-col h-[400px]">
+                        {% if games %}
+                            {% for bet in games %}
+                                {% history_game_card %}{% endhistory_game_card %}
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-gray-700 dark:text-gray-400">
+                                No transactions yet.
+                            </p>
+                        {% endif %}
 
-                </div>
+                    </div>
                 </div>
             </div>
 
@@ -77,94 +77,96 @@
 
     </div>
 
-    <script>
-        let position = "bottom";
+    {% if request.user.tier.charts_included and chart %}
+        <script>
+            let position = "bottom";
 
-        const getChartOptions = () => {
-            return {
-                series: {{ chart.spent | safe }},
-                colors: ["#1C64F2", "#16BDCA", "#FDBA8C", "#E74694"],
-                chart: {
-                    height: 320,
-                    width: "100%",
-                    type: "donut",
-                },
-                stroke: {
-                    colors: ["transparent"],
-                    lineCap: "",
-                },
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            labels: {
-                                show: true,
-                                name: {
+            const getChartOptions = () => {
+                return {
+                    series: {{ chart.spent | safe }},
+                    colors: ["#1C64F2", "#16BDCA", "#FDBA8C", "#E74694"],
+                    chart: {
+                        height: 320,
+                        width: "100%",
+                        type: "donut",
+                    },
+                    stroke: {
+                        colors: ["transparent"],
+                        lineCap: "",
+                    },
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                labels: {
                                     show: true,
-                                    offsetY: 20,
+                                    name: {
+                                        show: true,
+                                        offsetY: 20,
+                                    },
+                                    total: {
+                                        showAlways: true,
+                                        show: true,
+                                        label: "earned this month",
+                                        formatter: () => {{chart.profit | floatformat:2 }} + '€',
+                                    },
+                                    value: {
+                                        show: true,
+                                        offsetY: -20,
+                                        formatter: (value) => value + "€",
+                                    },
                                 },
-                                total: {
-                                    showAlways: true,
-                                    show: true,
-                                    label: "earned this month",
-                                    formatter: () => {{chart.profit | floatformat:2 }} + '€',
-                                },
-                                value: {
-                                    show: true,
-                                    offsetY: -20,
-                                    formatter: (value) => value + "€",
-                                },
+                                size: "80%",
                             },
-                            size: "80%",
                         },
                     },
-                },
-                grid: {
-                    padding: {
-                        top: -2,
+                    grid: {
+                        padding: {
+                            top: -2,
+                        },
                     },
-                },
-                labels: {{ chart.labels | safe }},
-                dataLabels: {
-                    enabled: false,
-                },
-                legend: {
-                    position: position,
-                },
-                yaxis: {
-                    labels: {
-                        formatter: (value) => value + "€",
+                    labels: {{ chart.labels | safe }},
+                    dataLabels: {
+                        enabled: false,
                     },
-                },
-                xaxis: {
-                    labels: {
-                        formatter: (value) => value + "€",
+                    legend: {
+                        position: position,
                     },
-                    axisTicks: {
-                        show: false,
+                    yaxis: {
+                        labels: {
+                            formatter: (value) => value + "€",
+                        },
                     },
-                    axisBorder: {
-                        show: false,
+                    xaxis: {
+                        labels: {
+                            formatter: (value) => value + "€",
+                        },
+                        axisTicks: {
+                            show: false,
+                        },
+                        axisBorder: {
+                            show: false,
+                        },
                     },
-                },
+                }
             }
-        }
 
-        if (document.getElementById("donut-chart") && typeof ApexCharts !== 'undefined') {
-            const updatePosition = () => {
-                const largeScreenQuery = window.matchMedia("(min-width: 768px)");
+            if (document.getElementById("donut-chart") && typeof ApexCharts !== 'undefined') {
+                const updatePosition = () => {
+                    const largeScreenQuery = window.matchMedia("(min-width: 768px)");
 
-                if (largeScreenQuery.matches) {
-                    position = "right";
-                } else {
-                    position = "bottom";
+                    if (largeScreenQuery.matches) {
+                        position = "right";
+                    } else {
+                        position = "bottom";
+                    }
+
+                    const chart = new ApexCharts(document.getElementById("donut-chart"), getChartOptions());
+                    chart.render();
                 }
 
-                const chart = new ApexCharts(document.getElementById("donut-chart"), getChartOptions());
-                chart.render();
+                updatePosition();
+                window.addEventListener("resize", updatePosition);
             }
-
-            updatePosition();
-            window.addEventListener("resize", updatePosition);
-        }
-    </script>
+        </script>
+    {% endif %}
 {% endblock content %}
