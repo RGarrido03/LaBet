@@ -139,6 +139,15 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
         if key in ["home", "draw", "away"]:
             odds_combination[key]["odd"] = request.session[id_str][key]
 
+    games_this_month = (
+        Bet.objects.filter(
+            user=request.user, created_at__month=datetime.datetime.now().month
+        )
+        .order_by("created_at")
+        .all()
+    )
+    total_this_month = sum([game.amount for game in games_this_month])
+
     return render(
         request,
         "game_by_id.html",
@@ -150,7 +159,7 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
                 if (odd := odds_combination.get("odd")) < 1
                 else 100 * (odd - 1)
             ),
-            "max_bet": request.user.tier.max_wallet,  # TODO: Implement wallet
+            "max_bet": request.user.tier.max_wallet - total_this_month,
             "session": request.session[id_str],
             "submitted": all(
                 [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
