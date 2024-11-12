@@ -17,16 +17,16 @@ from app.utils.similarity import get_most_similar_name
 # abstract class for scrapper
 class Scrapper(ABC):
     def __init__(
-            self,
-            name: str,
-            website: str,
-            logo: str,
-            hteam_extractor: Callable,
-            ateam_extractor: Callable,
-            date_extractor: Callable = None,
-            hodd_extractor: Callable = None,
-            dodd_extractor: Callable = None,
-            aodd_extractor: Callable = None,
+        self,
+        name: str,
+        website: str,
+        logo: str,
+        hteam_extractor: Callable,
+        ateam_extractor: Callable,
+        date_extractor: Callable = None,
+        hodd_extractor: Callable = None,
+        dodd_extractor: Callable = None,
+        aodd_extractor: Callable = None,
     ):
         self.name: str = name
         self.website: str = website
@@ -86,12 +86,9 @@ class Scrapper(ABC):
             return None
 
     def make_request(
-            self, method: str, url: str, headers: dict[str, Any] = None, data: Any = None
+        self, method: str, url: str, headers: dict[str, Any] = None, data: Any = None
     ) -> dict[str, Any]:
         try:
-            proxies = {
-                'https': 'http://20.111.54.16:8123'
-            }
             response = requests.request(method, url, headers=headers, json=data)
             response.raise_for_status()
             return response.json()
@@ -126,7 +123,9 @@ class Scrapper(ABC):
         try:
             # check if the game already exists but the odds will always be diferent
             # because of the normalization
-            game_odd = GameOdd.objects.filter(game=game, bet_house=self.bet_house).first()
+            game_odd = GameOdd.objects.filter(
+                game=game, bet_house=self.bet_house
+            ).first()
             if game_odd:
                 return game_odd
 
