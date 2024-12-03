@@ -1,28 +1,39 @@
 import datetime
 import itertools
+import json
 
 from django.contrib.auth import authenticate, login as auth_login
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import IntegrityError
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.request import Request
+from rest_framework.response import Response
 
-from app.forms import LoginForm, SignupForm, ProfileForm
+from app.forms import LoginForm
 from app.models import *
+from app.serializers import (
+    GameSerializer,
+    BetSerializer,
+    TierSerializer,
+    UserSerializer,
+)
 from app.utils.odds import get_best_combination
 
 
-def index(request: WSGIRequest) -> HttpResponse:
-    if not request.user.is_authenticated:
-        return render(request, "landing.html")
-
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def index(request: Request) -> Response:
     games = Game.objects.all()
     already_bet_games = [
         bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
 
     result = [
-        {"game": game.to_json(), "detail": odds}
+        {"game": GameSerializer(game).data, "detail": odds}
         for game in games
         if game not in already_bet_games
         and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
@@ -55,45 +66,46 @@ def index(request: WSGIRequest) -> HttpResponse:
         data_dict = {key: (amount, profit) for key, amount, profit in chart_data}
         chart_data = [(month, *data_dict.get(month, (0, 0))) for month in months]
 
-    return render(
-        request,
-        "index.html",
-        {
-            "games": result,
-            "chart": (
-                {
-                    "spent": [
-                        {
-                            "x": x[0],
-                            "y": x[1] if x[1] != 0 else 2,
-                            "meta": {"value": x[1]},
-                        }
-                        for x in chart_data
-                    ],
-                    "profit": [
-                        {
-                            "x": x[0],
-                            "y": x[2] if x[2] != 0 else 2,
-                            "meta": {"value": x[2]},
-                        }
-                        for x in chart_data
-                    ],
-                }
-                if request.user.tier.charts_included and len(already_bet_games) > 0
-                else None
-            ),
-        },
+    return Response(
+        json.dumps(
+            {
+                "games": result,
+                "chart": (
+                    {
+                        "spent": [
+                            {
+                                "x": x[0],
+                                "y": x[1] if x[1] != 0 else 2,
+                                "meta": {"value": x[1]},
+                            }
+                            for x in chart_data
+                        ],
+                        "profit": [
+                            {
+                                "x": x[0],
+                                "y": x[2] if x[2] != 0 else 2,
+                                "meta": {"value": x[2]},
+                            }
+                            for x in chart_data
+                        ],
+                    }
+                    if request.user.tier.charts_included and len(already_bet_games) > 0
+                    else None
+                ),
+            }
+        ),
+        status=status.HTTP_200_OK,
     )
 
 
-def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
-    if not request.user.is_authenticated:
-        return redirect("index")
-
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def game_by_id(request: Request, id: int) -> Response:
     game = Game.objects.get(id=id)
     if not game:
-        # TODO: 404 page
-        return JsonResponse({"error": "Game not found"}, status=404)
+        return Response(
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     game_odds = GameOdd.objects.filter(game=game).all()
     odds_combination = get_best_combination(game_odds)
@@ -103,7 +115,6 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
         request.session[id_str] = {}
 
     if request.method == "POST":
-
         # Update session
         request.session[id_str][request.POST.get("type")] = float(
             request.POST.get("odd")
@@ -115,7 +126,7 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
             [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
         ):
             # Submit the bet
-            Bet.objects.create(
+            bet = Bet.objects.create(
                 user=request.user,
                 game=game,
                 home_bet_house=odds_combination["home"]["house"],
@@ -126,10 +137,9 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
                 away_odd=request.session[id_str]["away"],
                 amount=request.POST.get("total"),
             )
+            return Response(BetSerializer(bet).data, status=status.HTTP_201_CREATED)
 
-        # Prevent the form from being submitted twice upon browser refresh
-
-        return redirect("game_by_id", id=id)
+        return Response(status=status.HTTP_200_OK)
 
     for key in request.session[id_str]:
         if key in ["home", "draw", "away"]:
@@ -144,30 +154,33 @@ def game_by_id(request: WSGIRequest, id: int) -> HttpResponse:
     )
     total_this_month = sum([game.amount for game in games_this_month])
 
-    return render(
-        request,
-        "game_by_id.html",
-        {
-            "game": game,
-            "combination": odds_combination,
-            "profit": (
-                100 * (1 - odd)
-                if (odd := odds_combination.get("odd")) < 1
-                else 100 * (odd - 1)
-            ),
-            "max_bet": request.user.tier.max_wallet - total_this_month,
-            "session": request.session[id_str],
-            "submitted": all(
-                [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
-            ),
-        },
+    return Response(
+        json.dumps(
+            {
+                "game": GameSerializer(game).data,
+                "combination": odds_combination,
+                "profit": (
+                    100 * (1 - odd)
+                    if (odd := odds_combination.get("odd")) < 1
+                    else 100 * (odd - 1)
+                ),
+                "max_bet": request.user.tier.max_wallet - total_this_month,
+                "session": request.session[id_str],
+                "submitted": all(
+                    [
+                        otype in request.session[id_str]
+                        for otype in ["home", "draw", "away"]
+                    ]
+                ),
+            },
+        ),
+        status=status.HTTP_200_OK,
     )
 
 
-def wallet(request: WSGIRequest) -> HttpResponse:
-    if not request.user.is_authenticated:
-        return redirect("login")
-
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def wallet(request: Request) -> Response:
     games = Bet.objects.filter(user=request.user).all()
     games_this_month = (
         Bet.objects.filter(
@@ -178,11 +191,9 @@ def wallet(request: WSGIRequest) -> HttpResponse:
     )
     total_this_month = sum([game.amount for game in games_this_month])
 
-    return render(
-        request,
-        "wallet.html",
+    return Response(
         {
-            "games": games,
+            "games": GameSerializer(games, many=True).data,
             "remaining": request.user.tier.max_wallet - total_this_month,
             "chart": (
                 {
@@ -197,24 +208,30 @@ def wallet(request: WSGIRequest) -> HttpResponse:
                 else None
             ),
         },
+        status=status.HTTP_200_OK,
     )
 
 
-def tier(request: WSGIRequest) -> HttpResponse:
-    # FIXME RUBEN, see this please
-    # removi pq temos de poder aceder aos tiers sem estar logado para o user saber ao que vai
-
-    # if not request.user.is_authenticated:
-    #     return redirect("login")
-    response = render(request, "tier.html", {"tiers": Tier.objects.all()})
-
-    if request.method == "POST":
-        tier_id = request.POST["tier"]
-        if request.user.is_authenticated:
+@api_view(["POST", "GET"])
+@permission_classes([IsAuthenticatedOrReadOnly])
+def tier(request: Request) -> Response:
+    match request.method:
+        case "POST":
+            tier_id = request.POST["tier"]
             request.user.tier = Tier.objects.get(id=tier_id)
             request.user.save()
+            return Response(
+                TierSerializer(request.user.tier).data, status=status.HTTP_200_OK
+            )
 
-    return render(request, "tier.html", {"tiers": Tier.objects.all()})
+        case "GET":
+            return Response(
+                TierSerializer(Tier.objects.all(), many=True).data,
+                status=status.HTTP_200_OK,
+            )
+
+        case _:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 def login(request: WSGIRequest) -> HttpResponse:
@@ -237,119 +254,98 @@ def login(request: WSGIRequest) -> HttpResponse:
     return render(request, "login.html", {"form": form})
 
 
-def profile(request: WSGIRequest) -> HttpResponse:
-    if not request.user.is_authenticated:
-        return redirect("login")
+@api_view(["POST", "GET", "PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def user(request: Request) -> Response:
+    match request.method:
+        case "POST":
+            username = request.POST["username"]
+            password = request.POST["password"]
+            email = request.POST["email"]
+            first_name = request.POST["first_name"]
+            last_name = request.POST["last_name"]
+            birth_date = request.POST["birth_date"]
+            selected_tier = request.POST["selected_tier"]
 
-    form = ProfileForm(user=request.user)
+            if datetime.date.fromisoformat(
+                birth_date
+            ) > datetime.date.today() - datetime.timedelta(days=365 * 18):
+                return Response(status=status.HTTP_403_FORBIDDEN)
 
-    if request.method == "POST":
-        try:
-            for prop in request.POST:
+            try:
+                user_ = User.objects.create_user(
+                    username,
+                    email,
+                    password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    birth_date=birth_date,
+                )
+                user_.tier = Tier.objects.get(id=selected_tier)
+                user_.save()
+            except IntegrityError:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
-                if request.POST[prop]:
-                    print("prop", prop)
-                    setattr(request.user, prop, request.POST[prop])
-
-            request.user.save()
-
-            return redirect("index")
-        except IntegrityError:
-            return render(
-                request,
-                "register.html",
-                {"error": "Username is already taken", "form": form},
+        case "GET":
+            return Response(
+                UserSerializer(request.user).data,
+                status=status.HTTP_200_OK,
             )
 
-    return render(request, "profile.html", {"form": form})
+        case "PUT":
+            try:
+                for prop in request.POST:
+                    if request.POST[prop]:
+                        setattr(request.user, prop, request.POST[prop])
+                request.user.save()
+                return Response(
+                    UserSerializer(request.user).data, status=status.HTTP_200_OK
+                )
+            except IntegrityError:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        case "DELETE":
+            request.user.delete()
+            return Response(status=status.HTTP_200_OK)
+
+        case _:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-def register(request: WSGIRequest) -> HttpResponse:
-    if request.user.is_authenticated:
-        return redirect("index")
-    form = SignupForm()
-    if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        email = request.POST["email"]
-        first_name = request.POST["first_name"]
-        last_name = request.POST["last_name"]
-        birth_date = request.POST["birth_date"]
-
-        if datetime.date.fromisoformat(
-            birth_date
-        ) > datetime.date.today() - datetime.timedelta(days=365 * 18):
-            return render(
-                request,
-                "register.html",
-                {"error": "You must be over 18 years old to register", "form": form},
-            )
-
-        try:
-            user = User.objects.create_user(
-                username,
-                email,
-                password,
-                first_name=first_name,
-                last_name=last_name,
-                birth_date=birth_date,
-            )
-            selected_tier = request.COOKIES.get("selected_tier")
-            if selected_tier:
-                try:
-                    tier_ = Tier.objects.get(id=selected_tier)
-                    user.tier = tier_
-                    user.save()
-                    # delete cookie
-                    request.COOKIES.pop("selected_tier")
-                except Tier.DoesNotExist:
-                    pass
-            else:
-                # redirect to tier selection page
-                user.save()
-                login(request)
-                response = redirect("tier")
-                return response
-
-            return login(request)
-        except IntegrityError:
-            return render(
-                request,
-                "register.html",
-                {"error": "Username is already taken", "form": form},
-            )
-
-    return render(request, "register.html", {"form": form})
-
-
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def combinations(request: WSGIRequest) -> HttpResponse:
-    debug = request.GET.get("debug", True)
     games = Game.objects.all()
 
-    result = [
-        {"game": game.to_json(), "detail": game_odds}
-        for game in games
-        if (
-            game_odds := get_best_combination(
-                GameOdd.objects.filter(game=game).all(), debug=debug
-            )
-        )
-        and game_odds.get("odd") < 1
+    already_bet_games = [
+        bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
 
-    return JsonResponse(result, safe=False)
+    result = [
+        {"game": GameSerializer(game).data, "detail": odds}
+        for game in games
+        if game not in already_bet_games
+        and (
+            odds := get_best_combination(list(GameOdd.objects.filter(game=game).all()))
+        )
+        and odds.get("odd") >= request.user.tier.min_arbitrage
+    ]
+
+    return Response(json.dumps(result), status=status.HTTP_200_OK)
 
 
-def combinations_by_id(request: WSGIRequest, id: int) -> HttpResponse:
-    debug = request.GET.get("debug", False)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def combinations_by_id(request: Request, id: int) -> Response:
     game = Game.objects.get(id=id)
     if not game:
-        return JsonResponse({"error": "Game not found"}, status=404)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     game_odds = GameOdd.objects.filter(game=game)
     if not game_odds:
-        return JsonResponse({"error": "No odds found for this game"}, status=404)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    result = get_best_combination(game_odds, debug=debug)
-
-    return JsonResponse(result, safe=False)
+    result = get_best_combination(list(game_odds))
+    if result.get("odd") < request.user.tier.min_arbitrage:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+    return Response(json.dumps(result), status=status.HTTP_200_OK)
