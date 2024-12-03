@@ -34,5 +34,4 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("combinations/", views.combinations, name="combinations"),
     path("combinations/<int:id>/", views.combinations_by_id, name="combinations_by_id"),
-    path("__reload__/", include("django_browser_reload.urls")),
 ]
