@@ -1,11 +1,15 @@
-django == 5.1.2
-sqlparse == 0.5.1
 asgiref == 3.8.1
-django-browser-reload == 1.16.0
-Pillow == 11.0.0
 crispy-tailwind == 1.0.3
+django == 5.1.3
+djangorestframework == 3.15.2
+django-browser-reload == 1.17.0
 django-crispy-forms == 2.3
-requests == 2.32.3
-unidecode == 1.3.8
+django-cors-headers == 4.6.0
+django-filter == 24.3
+django-q2 == 1.7.4
 django-web-components == 0.2.0
-django-q2==1.7.4
+markdown == 3.7
+Pillow == 11.0.0
+requests == 2.32.3
+sqlparse == 0.5.2
+unidecode == 1.3.8

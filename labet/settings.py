@@ -42,13 +42,16 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_tailwind",
     "django_web_components",
-    "django_q"
+    "django_q",
+    "rest_framework",
+    "corsheaders",
 ]
 
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -79,13 +82,13 @@ TEMPLATES = [
 ]
 
 Q_CLUSTER = {
-    'name': 'labet',
-    'workers': 4,
-    'timeout': 300,  # Aumente o timeout para 5 minutos
-    'retry': 350,  # O tempo de espera antes de re-tentar uma tarefa que falhou
+    "name": "labet",
+    "workers": 4,
+    "timeout": 300,  # Aumente o timeout para 5 minutos
+    "retry": 350,  # O tempo de espera antes de re-tentar uma tarefa que falhou
     # 'queue_limit': 50,
     # 'bulk': 10,
-    'orm': 'default'
+    "orm": "default",
 }
 
 WSGI_APPLICATION = "labet.wsgi.application"
@@ -151,3 +154,11 @@ CRISPY_TEMPLATE_PACK = "tailwind"
 LOG_FILE = BASE_DIR / "logs" / "LaBet.log"
 
 Q_CLUSTER_LOG_FILE = BASE_DIR / "logs" / "django_q.log"
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+}
+
+CORS_ORIGIN_ALLOW_ALL = True
