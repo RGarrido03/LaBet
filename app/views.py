@@ -9,10 +9,6 @@ from django.shortcuts import render, redirect
 
 from app.forms import LoginForm, SignupForm, ProfileForm
 from app.models import *
-from app.modules.betano import BetanoScrapper
-from app.modules.betclic import BetclicScrapper
-from app.modules.lebull import LebullScrapper
-from app.modules.placard import PlacardScrapper
 from app.utils.odds import get_best_combination
 
 
@@ -328,44 +324,6 @@ def register(request: WSGIRequest) -> HttpResponse:
             )
 
     return render(request, "register.html", {"form": form})
-
-
-def betclic_test(request: WSGIRequest) -> JsonResponse:
-    # request can have a parameter to select teh date
-    date_param = request.GET.get("date", None)
-    date = None
-    if date_param:
-        date = datetime.datetime.fromisoformat(date_param)
-
-    scrapper = BetclicScrapper()
-    data = scrapper.scrap()
-
-    if date:
-        data = [game_odd.to_json() for game_odd in data if game_odd.game.date >= date]
-    else:
-        data = [game_odd.to_json() for game_odd in data]
-    return JsonResponse(data, safe=False)
-
-
-def placard_test(request: WSGIRequest) -> JsonResponse:
-
-    scrapper = PlacardScrapper()
-    data = scrapper.scrap()
-    return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
-
-
-def lebull_test(request: WSGIRequest) -> JsonResponse:
-
-    scrapper = LebullScrapper()
-    data = scrapper.scrap()
-    return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
-
-
-def betano_test(request: WSGIRequest) -> JsonResponse:
-
-    scrapper = BetanoScrapper()
-    data = scrapper.scrap()
-    return JsonResponse([game_odd.to_json() for game_odd in data], safe=False)
 
 
 def combinations(request: WSGIRequest) -> HttpResponse:
