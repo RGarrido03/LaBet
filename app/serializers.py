@@ -12,7 +12,16 @@ class TierSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = (
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "tier",
+            "birth_date",
+            "iban",
+        )
 
 
 class SportSerializer(serializers.ModelSerializer):
