@@ -3,9 +3,7 @@ import itertools
 import json
 
 from django.contrib.auth import login
-from django.core.handlers.wsgi import WSGIRequest
 from django.db import IntegrityError
-from django.http import HttpResponse
 from knox.views import LoginView as KnoxLoginView
 from rest_framework import permissions
 from rest_framework import status
@@ -194,7 +192,6 @@ def game_by_id(request: Request, id: int) -> Response:
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def wallet(request: Request) -> Response:
-    games = Bet.objects.filter(user=request.user).all()
     games_this_month = (
         Bet.objects.filter(
             user=request.user, created_at__month=datetime.datetime.now().month
@@ -205,10 +202,18 @@ def wallet(request: Request) -> Response:
     total_this_month = sum([game.amount for game in games_this_month])
 
     return Response(
-        {
-            "games": GameSerializer(games, many=True).data,
-            "remaining": request.user.tier.max_wallet - total_this_month,
-        },
+        request.user.tier.max_wallet - total_this_month,
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def bet_games(request: Request) -> Response:
+    games = Bet.objects.filter(user=request.user).all()
+
+    return Response(
+        GameSerializer(games, many=True).data,
         status=status.HTTP_200_OK,
     )
 
@@ -295,7 +300,7 @@ def user(request: Request) -> Response:
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def combinations(request: WSGIRequest) -> HttpResponse:
+def combinations(request: Request) -> Response:
     games = Game.objects.all()
 
     already_bet_games = [
