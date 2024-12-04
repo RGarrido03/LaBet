@@ -19,12 +19,13 @@ from django.contrib import admin
 from django.urls import path
 from knox import views as knox_views
 
-from app.views import auth, chart, game, user
+from app.views import auth, bet, chart, game, user
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path(r"api/auth/login/", auth.LoginView.as_view(), name="knox_login"),
     path(r"api/auth/logout/", knox_views.LogoutView.as_view(), name="knox_logout"),
+    path("api/bet/", bet.bet_games, name="bet"),
     path(
         r"api/auth/logoutall/",
         knox_views.LogoutAllView.as_view(),
@@ -34,7 +35,6 @@ urlpatterns = [
     path("api/chart/month", chart.chart_month, name="chart_month"),
     path("api/game/", game.combinations, name="combinations"),
     path("api/game/<int:id>/", game.game_by_id, name="game_by_id"),
-    path("api/game/me", game.bet_games, name="combinations"),
     path(
         "api/combinations/<int:id>/",
         game.combinations_by_id,

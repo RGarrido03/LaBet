@@ -97,17 +97,6 @@ def game_by_id(request: Request, id: int) -> Response:
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def bet_games(request: Request) -> Response:
-    games = Bet.objects.filter(user=request.user).all()
-
-    return Response(
-        GameSerializer(games, many=True).data,
-        status=status.HTTP_200_OK,
-    )
-
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
 def combinations(request: Request) -> Response:
     games = Game.objects.all()
 
