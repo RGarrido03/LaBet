@@ -1,5 +1,4 @@
 import datetime
-import json
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -24,13 +23,12 @@ def game_by_id(request: Request, id: int) -> Response:
         )
 
     game_odds = GameOdd.objects.filter(game=game).all()
-    print("pixalo", game_odds)
     if not game_odds:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     combination = get_best_combination(list(game_odds))
-
-    print("pixa", combination)
+    if not combination:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     if combination.get("odd") < request.user.tier.min_arbitrage:
         return Response(status=status.HTTP_403_FORBIDDEN)
@@ -49,14 +47,12 @@ def game_by_id(request: Request, id: int) -> Response:
     total_this_month = sum([game.amount for game in games_this_month])
 
     return Response(
-        json.dumps(
-            {
-                "game": GameSerializer(game).data,
-                "combination": combination,
-                "profit": profit,
-                "max_bet": request.user.tier.max_wallet - total_this_month,
-            },
-        ),
+        {
+            "game": GameSerializer(game).data,
+            "combination": combination,
+            "profit": profit,
+            "max_bet": request.user.tier.max_wallet - total_this_month,
+        },
         status=status.HTTP_200_OK,
     )
 
@@ -80,4 +76,4 @@ def games(request: Request) -> Response:
         and odds.get("odd") >= request.user.tier.min_arbitrage
     ]
 
-    return Response(json.dumps(result), status=status.HTTP_200_OK)
+    return Response(result, status=status.HTTP_200_OK)

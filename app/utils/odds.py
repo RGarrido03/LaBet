@@ -2,6 +2,7 @@ import random
 from typing import Any
 
 from app.models import GameOdd
+from app.serializers import BetHouseSerializer
 
 
 def normalize_odds(hodd: float, dodd: float, aodd: float) -> tuple[float, float, float]:
@@ -29,19 +30,19 @@ def get_best_combination(odds: list[GameOdd]) -> dict[str, Any] | None:
 
     return {
         "home": {
-            "house": home.bet_house,
+            "house": BetHouseSerializer(home.bet_house).data,
             "odd": home.home_odd,
         },
         "draw": (
             {
-                "house": draw.bet_house,
+                "house": BetHouseSerializer(draw.bet_house).data,
                 "odd": draw.draw_odd,
             }
             if draw
             else None
         ),
         "away": {
-            "house": away.bet_house,
+            "house": BetHouseSerializer(away.bet_house).data,
             "odd": away.away_odd,
         },
         "odd": odd,
