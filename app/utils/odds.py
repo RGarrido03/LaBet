@@ -16,21 +16,9 @@ def calculate_arbitrage(home: float, draw: float, away: float) -> float:
     return 1 / home + 1 / draw + 1 / away
 
 
-def get_best_combination(
-    odds: list[GameOdd],
-    debug: bool = False,
-) -> dict[str, Any] | None:
+def get_best_combination(odds: list[GameOdd]) -> dict[str, Any] | None:
     if len(odds) == 1:
         return None
-
-    if debug:
-        print(odds[0].game)
-        for odd in odds:
-            print(
-                "   ",
-                odd.bet_house.name,
-                (float(odd.home_odd), float(odd.draw_odd), float(odd.away_odd)),
-            )
 
     home = max(odds, key=lambda x: x.home_odd)
     draw = max(odds, key=lambda x: x.draw_odd)
@@ -38,19 +26,6 @@ def get_best_combination(
     odd = float(
         1 / home.home_odd + (1 / draw.draw_odd if draw else 0) + 1 / away.away_odd
     )
-
-    if debug:
-        print(
-            "   ",
-            "Best odds combination",
-            (
-                float(home.home_odd),
-                float(draw.draw_odd) if draw else None,
-                float(away.away_odd),
-            ),
-            "=>",
-            odd,
-        )
 
     return {
         "home": {

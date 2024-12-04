@@ -24,10 +24,13 @@ def game_by_id(request: Request, id: int) -> Response:
         )
 
     game_odds = GameOdd.objects.filter(game=game).all()
+    print("pixalo", game_odds)
     if not game_odds:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     combination = get_best_combination(list(game_odds))
+
+    print("pixa", combination)
 
     if combination.get("odd") < request.user.tier.min_arbitrage:
         return Response(status=status.HTTP_403_FORBIDDEN)
