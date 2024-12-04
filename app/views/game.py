@@ -10,7 +10,6 @@ from rest_framework.response import Response
 from app.models import *
 from app.serializers import (
     GameSerializer,
-    BetSerializer,
 )
 from app.utils.odds import get_best_combination
 
@@ -26,41 +25,6 @@ def game_by_id(request: Request, id: int) -> Response:
 
     game_odds = GameOdd.objects.filter(game=game).all()
     odds_combination = get_best_combination(game_odds)
-
-    id_str = str(id)
-    if not str(id) in request.session:
-        request.session[id_str] = {}
-
-    if request.method == "POST":
-        # Update session
-        request.session[id_str][request.POST.get("type")] = float(
-            request.POST.get("odd")
-        )
-        request.session[id_str]["total"] = float(request.POST.get("total"))
-        request.session.modified = True
-
-        if all(
-            [otype in request.session[id_str] for otype in ["home", "draw", "away"]]
-        ):
-            # Submit the bet
-            bet = Bet.objects.create(
-                user=request.user,
-                game=game,
-                home_bet_house=odds_combination["home"]["house"],
-                home_odd=request.session[id_str]["home"],
-                draw_bet_house=odds_combination["draw"]["house"],
-                draw_odd=request.session[id_str]["draw"],
-                away_bet_house=odds_combination["away"]["house"],
-                away_odd=request.session[id_str]["away"],
-                amount=request.POST.get("total"),
-            )
-            return Response(BetSerializer(bet).data, status=status.HTTP_201_CREATED)
-
-        return Response(status=status.HTTP_200_OK)
-
-    for key in request.session[id_str]:
-        if key in ["home", "draw", "away"]:
-            odds_combination[key]["odd"] = request.session[id_str][key]
 
     games_this_month = (
         Bet.objects.filter(
