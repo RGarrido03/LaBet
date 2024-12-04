@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from app.models import Bet, Tier, User
 from app.serializers import TierSerializer, UserSerializer
+from app.utils.authorization import IsAuthenticatedOrNew
 
 
 @api_view(["GET"])
@@ -52,7 +53,7 @@ def tier(request: Request) -> Response:
 
 
 @api_view(["POST", "GET", "PUT", "DELETE"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticatedOrNew])
 def user(request: Request) -> Response:
     match request.method:
         case "POST":
