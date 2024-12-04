@@ -7,7 +7,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-import app.views.user
 from app.models import *
 from app.serializers import (
     GameSerializer,
@@ -82,7 +81,7 @@ def game_by_id(request: Request, id: int) -> Response:
                     if (odd := odds_combination.get("odd")) < 1
                     else 100 * (odd - 1)
                 ),
-                "max_bet": app.views.game.user.tier.max_wallet - total_this_month,
+                "max_bet": request.user.tier.max_wallet - total_this_month,
                 "session": request.session[id_str],
                 "submitted": all(
                     [
@@ -123,7 +122,7 @@ def combinations(request: Request) -> Response:
         and (
             odds := get_best_combination(list(GameOdd.objects.filter(game=game).all()))
         )
-        and odds.get("odd") >= app.views.game.user.tier.min_arbitrage
+        and odds.get("odd") >= request.user.tier.min_arbitrage
     ]
 
     return Response(json.dumps(result), status=status.HTTP_200_OK)
@@ -141,6 +140,7 @@ def combinations_by_id(request: Request, id: int) -> Response:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     result = get_best_combination(list(game_odds))
-    if result.get("odd") < app.views.game.user.tier.min_arbitrage:
+    if result.get("odd") < request.user.tier.min_arbitrage:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+
     return Response(json.dumps(result), status=status.HTTP_200_OK)
