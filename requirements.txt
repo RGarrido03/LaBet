@@ -8,6 +8,7 @@ django-filter == 24.3
 django-q2 == 1.7.4
 django-rest-knox == 5.0.2
 django-web-components == 0.2.0
+drf-yasg[validation] == 1.21.8
 markdown == 3.7
 Pillow == 11.0.0
 requests == 2.32.3

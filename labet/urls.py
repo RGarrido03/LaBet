@@ -17,9 +17,21 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 from knox import views as knox_views
+from rest_framework import permissions
 
 from app.views import auth, bet, chart, game, user
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="LaBet API",
+        default_version="v1",
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -36,7 +48,23 @@ urlpatterns = [
     path("api/chart/month", chart.chart_month, name="chart_month"),
     path("api/game/", game.games, name="games"),
     path("api/game/<int:id>/", game.game_by_id, name="game_by_id"),
-    path("api/user/", user.user, name="user"),
+    path("api/user", user.new_user, name="user"),
+    path("api/user/me", user.user_me, name="user_me"),
     path("api/user/tier/", user.tier, name="tier"),
     path("api/user/wallet", user.wallet, name="wallet"),
+    path(
+        "docs/swagger<format>/",
+        schema_view.without_ui(cache_timeout=0),
+        name="schema-json",
+    ),
+    path(
+        "docs/swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
+    path(
+        "docs/redoc/",
+        schema_view.with_ui("redoc", cache_timeout=0),
+        name="schema-redoc",
+    ),
 ]

@@ -3,46 +3,49 @@ from rest_framework import serializers
 from app.models import *
 
 
-class BaseSerializer(serializers.ModelSerializer):
+class TierSerializer(serializers.ModelSerializer):
     class Meta:
+        model = Tier
         fields = "__all__"
 
 
-class TierSerializer(BaseSerializer):
-    class Meta:
-        model = Tier
-
-
-class UserSerializer(BaseSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
+        fields = "__all__"
 
 
-class SportSerializer(BaseSerializer):
+class SportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sport
+        fields = "__all__"
 
 
-class TeamSerializer(BaseSerializer):
+class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
+        fields = "__all__"
 
 
-class GameSerializer(BaseSerializer):
+class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
+        fields = "__all__"
 
 
-class BetHouseSerializer(BaseSerializer):
+class BetHouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = BetHouse
+        fields = "__all__"
 
 
-class GameOddSerializer(BaseSerializer):
+class GameOddSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameOdd
+        fields = "__all__"
 
 
-class BetSerializer(BaseSerializer):
+class BetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bet
+        fields = "__all__"
