@@ -17,16 +17,22 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from knox import views as knox_views
 
 from app import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
+    path(r"api/auth/login/", views.LoginView.as_view(), name="knox_login"),
+    path(r"api/auth/logout/", knox_views.LogoutView.as_view(), name="knox_logout"),
+    path(
+        r"api/auth/logoutall/",
+        knox_views.LogoutAllView.as_view(),
+        name="knox_logoutall",
+    ),
     path("api/game/<int:id>/", views.game_by_id, name="game_by_id"),
     path("api/user/", views.user, name="profile"),
-    path("api/user/login/", views.login, name="login"),
-    path("api/user/logout/", views.logout, name="logout"),
     path("api/user/tier/", views.tier, name="tier"),
     path("api/user/wallet", views.wallet, name="wallet"),
     path("api/game/", views.combinations, name="combinations"),

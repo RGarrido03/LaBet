@@ -2,18 +2,19 @@ import datetime
 import itertools
 import json
 
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import login
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import IntegrityError
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from knox.views import LoginView as KnoxLoginView
+from rest_framework import permissions
 from rest_framework import status
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from app.forms import LoginForm
 from app.models import *
 from app.serializers import (
     GameSerializer,
@@ -234,26 +235,6 @@ def tier(request: Request) -> Response:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-def login(request: WSGIRequest) -> HttpResponse:
-    if request.user.is_authenticated:
-        return redirect("index")
-    form = LoginForm()
-
-    if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user: User = authenticate(request, username=username, password=password)
-        if user is not None:
-            auth_login(request, user)
-            return redirect("index")
-        else:
-            return render(
-                request, "login.html", {"error": "Invalid credentials", "form": form}
-            )
-
-    return render(request, "login.html", {"form": form})
-
-
 @api_view(["POST", "GET", "PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
 def user(request: Request) -> Response:
@@ -349,3 +330,14 @@ def combinations_by_id(request: Request, id: int) -> Response:
     if result.get("odd") < request.user.tier.min_arbitrage:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     return Response(json.dumps(result), status=status.HTTP_200_OK)
+
+
+class LoginView(KnoxLoginView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, format=None):
+        serializer = AuthTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+        login(request, user)
+        return super(LoginView, self).post(request, format=None)

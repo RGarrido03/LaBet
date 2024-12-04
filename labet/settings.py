@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django_web_components",
     "django_q",
     "rest_framework",
+    "knox",
     "corsheaders",
 ]
 
@@ -154,9 +155,8 @@ LOG_FILE = BASE_DIR / "logs" / "LaBet.log"
 Q_CLUSTER_LOG_FILE = BASE_DIR / "logs" / "django_q.log"
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
-    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": ["knox.auth.TokenAuthentication"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
