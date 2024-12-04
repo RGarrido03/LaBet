@@ -22,77 +22,89 @@ from app.serializers import (
     TierSerializer,
     UserSerializer,
 )
+from app.utils.authorization import HasChartsIncluded
 from app.utils.odds import get_best_combination
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def index(request: Request) -> Response:
-    games = Game.objects.all()
+@permission_classes([IsAuthenticated, HasChartsIncluded])
+def chart_history(request: Request) -> Response:
     already_bet_games = [
         bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
 
-    result = [
-        {"game": GameSerializer(game).data, "detail": odds}
-        for game in games
-        if game not in already_bet_games
-        and (odds := get_best_combination(GameOdd.objects.filter(game=game).all()))
-        and odds.get("odd") >= request.user.tier.min_arbitrage
+    if len(already_bet_games) == 0:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    chart_data = [
+        (
+            key,
+            round(float(sum(x.amount for x in g1)), 2),
+            round(float(sum(x.profit for x in g2)), 2),
+        )
+        for key, group in itertools.groupby(
+            Bet.objects.filter(user=request.user).order_by("created_at"),
+            key=lambda bet: bet.created_at.strftime("%Y-%m"),
+        )
+        for g1, g2 in [itertools.tee(group)]
     ]
 
-    if request.user.tier.charts_included:
-        # Spagehetti code, I know
-        # I don't care, it works
-        chart_data = [
-            (
-                key,
-                round(float(sum(x.amount for x in g1)), 2),
-                round(float(sum(x.profit for x in g2)), 2),
-            )
-            for key, group in itertools.groupby(
-                Bet.objects.filter(user=request.user).order_by("created_at"),
-                key=lambda bet: bet.created_at.strftime("%Y-%m"),
-            )
-            for g1, g2 in [itertools.tee(group)]
-        ]
+    months = [
+        (datetime.datetime.now() - datetime.timedelta(days=30 * i)).strftime("%Y-%m")
+        for i in range(2, -1, -1)
+    ]
 
-        months = [
-            (datetime.datetime.now() - datetime.timedelta(days=30 * i)).strftime(
-                "%Y-%m"
-            )
-            for i in range(2, -1, -1)
-        ]
-
-        data_dict = {key: (amount, profit) for key, amount, profit in chart_data}
-        chart_data = [(month, *data_dict.get(month, (0, 0))) for month in months]
+    data_dict = {key: (amount, profit) for key, amount, profit in chart_data}
+    chart_data = [(month, *data_dict.get(month, (0, 0))) for month in months]
 
     return Response(
         json.dumps(
             {
-                "games": result,
-                "chart": (
+                "spent": [
                     {
-                        "spent": [
-                            {
-                                "x": x[0],
-                                "y": x[1] if x[1] != 0 else 2,
-                                "meta": {"value": x[1]},
-                            }
-                            for x in chart_data
-                        ],
-                        "profit": [
-                            {
-                                "x": x[0],
-                                "y": x[2] if x[2] != 0 else 2,
-                                "meta": {"value": x[2]},
-                            }
-                            for x in chart_data
-                        ],
+                        "x": x[0],
+                        "y": x[1] if x[1] != 0 else 2,
+                        "meta": {"value": x[1]},
                     }
-                    if request.user.tier.charts_included and len(already_bet_games) > 0
-                    else None
-                ),
+                    for x in chart_data
+                ],
+                "profit": [
+                    {
+                        "x": x[0],
+                        "y": x[2] if x[2] != 0 else 2,
+                        "meta": {"value": x[2]},
+                    }
+                    for x in chart_data
+                ],
+            }
+        ),
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, HasChartsIncluded])
+def chart_month(request: Request) -> Response:
+    bets_this_month = (
+        Bet.objects.filter(
+            user=request.user, created_at__month=datetime.datetime.now().month
+        )
+        .order_by("created_at")
+        .all()
+    )
+
+    if len(bets_this_month) == 0:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    return Response(
+        json.dumps(
+            {
+                "labels": [
+                    f"{bet.game.home_team} vs {bet.game.away_team}"
+                    for bet in bets_this_month
+                ],
+                "spent": [float(bet.amount) for bet in bets_this_month],
+                "profit": sum(bet.profit for bet in bets_this_month),
             }
         ),
         status=status.HTTP_200_OK,
@@ -196,18 +208,6 @@ def wallet(request: Request) -> Response:
         {
             "games": GameSerializer(games, many=True).data,
             "remaining": request.user.tier.max_wallet - total_this_month,
-            "chart": (
-                {
-                    "labels": [
-                        f"{game.game.home_team} vs {game.game.away_team}"
-                        for game in games_this_month
-                    ],
-                    "spent": [float(game.amount) for game in games_this_month],
-                    "profit": sum(game.profit for game in games_this_month),
-                }
-                if len(games_this_month) > 0
-                else None
-            ),
         },
         status=status.HTTP_200_OK,
     )

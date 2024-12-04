@@ -23,7 +23,6 @@ from app import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.index, name="index"),
     path(r"api/auth/login/", views.LoginView.as_view(), name="knox_login"),
     path(r"api/auth/logout/", knox_views.LogoutView.as_view(), name="knox_logout"),
     path(
@@ -31,6 +30,8 @@ urlpatterns = [
         knox_views.LogoutAllView.as_view(),
         name="knox_logoutall",
     ),
+    path("api/chart/history", views.chart_history, name="chart_history"),
+    path("api/chart/month", views.chart_month, name="chart_month"),
     path("api/game/<int:id>/", views.game_by_id, name="game_by_id"),
     path("api/user/", views.user, name="profile"),
     path("api/user/tier/", views.tier, name="tier"),
