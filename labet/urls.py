@@ -19,28 +19,28 @@ from django.contrib import admin
 from django.urls import path
 from knox import views as knox_views
 
-from app import views
+from app.views import auth, chart, game, user
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path(r"api/auth/login/", views.LoginView.as_view(), name="knox_login"),
+    path(r"api/auth/login/", auth.LoginView.as_view(), name="knox_login"),
     path(r"api/auth/logout/", knox_views.LogoutView.as_view(), name="knox_logout"),
     path(
         r"api/auth/logoutall/",
         knox_views.LogoutAllView.as_view(),
         name="knox_logoutall",
     ),
-    path("api/chart/history", views.chart_history, name="chart_history"),
-    path("api/chart/month", views.chart_month, name="chart_month"),
-    path("api/game/", views.combinations, name="combinations"),
-    path("api/game/<int:id>/", views.game_by_id, name="game_by_id"),
-    path("api/game/me", views.bet_games, name="combinations"),
+    path("api/chart/history", chart.chart_history, name="chart_history"),
+    path("api/chart/month", chart.chart_month, name="chart_month"),
+    path("api/game/", game.combinations, name="combinations"),
+    path("api/game/<int:id>/", game.game_by_id, name="game_by_id"),
+    path("api/game/me", game.bet_games, name="combinations"),
     path(
         "api/combinations/<int:id>/",
-        views.combinations_by_id,
+        game.combinations_by_id,
         name="combinations_by_id",
     ),
-    path("api/user/", views.user, name="profile"),
-    path("api/user/tier/", views.tier, name="tier"),
-    path("api/user/wallet", views.wallet, name="wallet"),
+    path("api/user/", user.user, name="user"),
+    path("api/user/tier/", user.tier, name="tier"),
+    path("api/user/wallet", user.wallet, name="wallet"),
 ]
