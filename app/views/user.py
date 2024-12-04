@@ -48,9 +48,9 @@ def new_user(request: Request) -> Response:
     serialized.is_valid(raise_exception=True)
     tier = request.POST["tier"] if "tier" in request.POST else 1
 
-    if datetime.date.fromisoformat(
-        serialized.data["birth_date"]
-    ) > datetime.date.today() - datetime.timedelta(days=365 * 18):
+    if serialized.validated_data[
+        "birth_date"
+    ] > datetime.date.today() - datetime.timedelta(days=365 * 18):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -78,17 +78,11 @@ def user_me(request: Request) -> Response:
             )
 
         case "PUT":
-            try:
-                serialized = UserSerializer(data=request.data)
-                serialized.is_valid(raise_exception=True)
-                for k, v in serialized.data.items():
-                    setattr(request.user, k, v)
-                request.user.save()
-                return Response(
-                    UserSerializer(request.user).data, status=status.HTTP_200_OK
-                )
-            except IntegrityError:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+            serialized = UserSerializer(request.user, data=request.data)
+            if not serialized.is_valid():
+                return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+            serialized.save()
+            return Response(serialized.data, status=status.HTTP_200_OK)
 
         case "DELETE":
             request.user.delete()
