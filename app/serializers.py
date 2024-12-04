@@ -24,6 +24,22 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
+class UserCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "tier",
+            "birth_date",
+            "iban",
+        )
+
+
 class SportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sport

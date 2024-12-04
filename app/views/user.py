@@ -12,7 +12,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from app.models import Bet, Tier
-from app.serializers import UserSerializer
+from app.serializers import UserSerializer, UserCreateSerializer
 
 
 @swagger_auto_schema(method="GET", responses={200: "Wallet"})
@@ -44,7 +44,7 @@ def new_user(request: Request) -> Response:
     if request.method != "POST":
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    serialized = UserSerializer(data=request.data)
+    serialized = UserCreateSerializer(data=request.data)
     serialized.is_valid(raise_exception=True)
     tier = request.POST["tier"] if "tier" in request.POST else 1
 
