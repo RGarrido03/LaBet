@@ -30,7 +30,7 @@ def wallet(request: Request) -> Response:
     total_this_month = sum([game.amount for game in games_this_month])
 
     return Response(
-        request.user.tier.max_wallet - total_this_month,
+        {"remaining": request.user.tier.max_wallet - total_this_month},
         status=status.HTTP_200_OK,
     )
 
@@ -46,8 +46,14 @@ def wallet(request: Request) -> Response:
 def tier(request: Request) -> Response:
     match request.method:
         case "POST":
-            tier_id = request.POST["tier"]
-            request.user.tier = Tier.objects.get(id=tier_id)
+            tier_id = request.POST["id"]
+
+            try:
+                tier = Tier.objects.get(id=tier_id)
+            except Tier.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+            request.user.tier = tier
             request.user.save()
             return Response(
                 TierSerializer(request.user.tier).data, status=status.HTTP_200_OK
