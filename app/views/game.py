@@ -49,7 +49,7 @@ def game_by_id(request: Request, id: int) -> Response:
     return Response(
         {
             "game": GameSerializer(game).data,
-            "combination": combination,
+            "detail": combination,
             "profit": profit,
             "max_bet": request.user.tier.max_wallet - total_this_month,
         },
