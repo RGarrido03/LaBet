@@ -1,6 +1,5 @@
 import datetime
 import itertools
-import json
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -46,26 +45,24 @@ def chart_history(request: Request) -> Response:
     chart_data = [(month, *data_dict.get(month, (0, 0))) for month in months]
 
     return Response(
-        json.dumps(
-            {
-                "spent": [
-                    {
-                        "x": x[0],
-                        "y": x[1] if x[1] != 0 else 2,
-                        "meta": {"value": x[1]},
-                    }
-                    for x in chart_data
-                ],
-                "profit": [
-                    {
-                        "x": x[0],
-                        "y": x[2] if x[2] != 0 else 2,
-                        "meta": {"value": x[2]},
-                    }
-                    for x in chart_data
-                ],
-            }
-        ),
+        {
+            "spent": [
+                {
+                    "x": x[0],
+                    "y": x[1] if x[1] != 0 else 2,
+                    "meta": {"value": x[1]},
+                }
+                for x in chart_data
+            ],
+            "profit": [
+                {
+                    "x": x[0],
+                    "y": x[2] if x[2] != 0 else 2,
+                    "meta": {"value": x[2]},
+                }
+                for x in chart_data
+            ],
+        },
         status=status.HTTP_200_OK,
     )
 
@@ -88,15 +85,13 @@ def chart_month(request: Request) -> Response:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     return Response(
-        json.dumps(
-            {
-                "labels": [
-                    f"{bet.game.home_team} vs {bet.game.away_team}"
-                    for bet in bets_this_month
-                ],
-                "spent": [float(bet.amount) for bet in bets_this_month],
-                "profit": sum(bet.profit for bet in bets_this_month),
-            }
-        ),
+        {
+            "labels": [
+                f"{bet.game.home_team} vs {bet.game.away_team}"
+                for bet in bets_this_month
+            ],
+            "spent": [float(bet.amount) for bet in bets_this_month],
+            "profit": sum(bet.profit for bet in bets_this_month),
+        },
         status=status.HTTP_200_OK,
     )
