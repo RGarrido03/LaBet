@@ -9,12 +9,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from app.models import Bet
-from app.utils.authorization import HasChartsIncluded
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated, HasChartsIncluded])
+@permission_classes([IsAuthenticated])
 def chart_history(request: Request) -> Response:
+    if not request.user.tier.charts_included:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
     already_bet_games = [
         bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
@@ -69,8 +71,11 @@ def chart_history(request: Request) -> Response:
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated, HasChartsIncluded])
+@permission_classes([IsAuthenticated])
 def chart_month(request: Request) -> Response:
+    if not request.user.tier.charts_included:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
     bets_this_month = (
         Bet.objects.filter(
             user=request.user, created_at__month=datetime.datetime.now().month
