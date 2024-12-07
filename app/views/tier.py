@@ -29,10 +29,8 @@ def tier(_: Request) -> Response:
 @permission_classes([IsAuthenticated])
 def tier_me(request: Request) -> Response:
     if request.method == "POST":
-        tier_id = request.POST["id"]
-
         try:
-            tier = Tier.objects.get(id=tier_id)
+            tier = Tier.objects.get(id=request.data["id"])
         except Tier.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
