@@ -10,6 +10,8 @@ class TierSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    tier = TierSerializer(read_only=True)
+
     class Meta:
         model = User
         fields = (
