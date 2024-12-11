@@ -78,6 +78,9 @@ class GameOddSerializer(serializers.ModelSerializer):
 
 
 class BetSerializer(serializers.ModelSerializer):
+    game = GameSerializer(read_only=True)
+    profit = serializers.ReadOnlyField()
+
     class Meta:
         model = Bet
         fields = "__all__"
