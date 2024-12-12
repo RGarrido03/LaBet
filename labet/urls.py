@@ -48,6 +48,7 @@ urlpatterns = [
     path("api/chart/month", chart.chart_month, name="chart_month"),
     path("api/game", game.games, name="games"),
     path("api/game/<int:id>", game.game_by_id, name="game_by_id"),
+    path("api/game/<int:id>/bet", game.game_by_id_and_bet, name="game_by_id_and_bet"),
     path("api/tier", tier.tier, name="tier"),
     path("api/tier/me", tier.tier_me, name="tier"),
     path("api/user", user.new_user, name="user"),
