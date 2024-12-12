@@ -38,7 +38,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "email",
             "tier",
             "birth_date",
-            "iban",
+            "password",
         )
 
 
