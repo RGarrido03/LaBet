@@ -78,6 +78,16 @@ def games(request: Request) -> Response:
         bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
 
+
+    # check if there is filter or sort or both
+    if request.GET.get("filter"):
+        games = games.filter(name__icontains=request.GET.get("filter"))
+
+    if request.GET.get("sort"):
+        games = games.order_by(request.GET.get("sort"))
+
+
+
     result = [
         {"game": GameSerializer(game).data, "detail": odds}
         for game in games
