@@ -51,7 +51,10 @@ def new_user(request: Request) -> Response:
     if serialized.validated_data[
         "birth_date"
     ] > datetime.date.today() - datetime.timedelta(days=365 * 18):
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            {"birth_date": ["You must be at least 18 years old"]},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     try:
         user_ = serialized.save()
