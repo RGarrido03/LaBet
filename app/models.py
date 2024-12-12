@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from app.utils.date import validate_age
+
 
 class Tier(models.Model):
     id = models.AutoField(primary_key=True)
@@ -17,7 +19,7 @@ class Tier(models.Model):
 
 class User(AbstractUser):
     tier = models.ForeignKey(Tier, on_delete=models.CASCADE, null=True)
-    birth_date = models.DateField(null=True)
+    birth_date = models.DateField(null=True, validators=[validate_age])
     iban = models.CharField(max_length=34, null=True)
 
     def __str__(self):
