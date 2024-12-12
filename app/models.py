@@ -1,6 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.forms.models import model_to_dict
 
 
 class Tier(models.Model):
@@ -15,9 +14,6 @@ class Tier(models.Model):
     def __str__(self):
         return self.name
 
-    def to_json(self):
-        return model_to_dict(self)
-
 
 class User(AbstractUser):
     tier = models.ForeignKey(Tier, on_delete=models.CASCADE, null=True)
@@ -27,11 +23,6 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-    def to_json(self):
-        user_dict = model_to_dict(self)
-        user_dict["tier"] = self.tier.to_json() if self.tier else None
-        return user_dict
-
 
 class Sport(models.Model):
     id = models.AutoField(primary_key=True)
@@ -39,9 +30,6 @@ class Sport(models.Model):
 
     def __str__(self):
         return self.name
-
-    def to_json(self):
-        return model_to_dict(self)
 
 
 class Team(models.Model):
@@ -54,11 +42,6 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
-
-    def to_json(self):
-        team_dict = model_to_dict(self)
-        team_dict["sport"] = self.sport.to_json()
-        return team_dict
 
 
 class Game(models.Model):
@@ -77,12 +60,6 @@ class Game(models.Model):
     def __str__(self):
         return f"{self.home_team} vs {self.away_team}"
 
-    def to_json(self):
-        game_dict = model_to_dict(self)
-        game_dict["home_team"] = self.home_team.to_json()
-        game_dict["away_team"] = self.away_team.to_json()
-        return game_dict
-
 
 class BetHouse(models.Model):
     id = models.AutoField(primary_key=True)
@@ -92,9 +69,6 @@ class BetHouse(models.Model):
 
     def __str__(self):
         return self.name
-
-    def to_json(self):
-        return model_to_dict(self)
 
 
 class GameOdd(models.Model):
@@ -106,12 +80,6 @@ class GameOdd(models.Model):
 
     def __str__(self):
         return f"{self.game} - {self.bet_house}"
-
-    def to_json(self):
-        odd_dict = model_to_dict(self)
-        odd_dict["game"] = self.game.to_json()  # Incluindo o jogo
-        odd_dict["bet_house"] = self.bet_house.to_json()  # Incluindo a casa de apostas
-        return odd_dict
 
 
 class Bet(models.Model):
@@ -157,14 +125,3 @@ class Bet(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.game}"
-
-    def to_json(self):
-        bet_dict = model_to_dict(self)
-        bet_dict["user"] = self.user.to_json()
-        bet_dict["game"] = self.game.to_json()
-        bet_dict["home_bet_house"] = self.home_bet_house.to_json()
-        bet_dict["draw_bet_house"] = (
-            self.draw_bet_house.to_json() if self.draw_bet_house else None
-        )
-        bet_dict["away_bet_house"] = self.away_bet_house.to_json()
-        return bet_dict
