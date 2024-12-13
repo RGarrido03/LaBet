@@ -11,8 +11,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from app.models import Bet, Tier
+from app.models import Bet, Tier, User
 from app.serializers import UserSerializer, UserCreateSerializer
+from app.utils.authorization import IsAdmin
 
 
 @swagger_auto_schema(method="GET", responses={200: "Wallet"})
@@ -85,3 +86,13 @@ def user_me(request: Request) -> Response:
 
         case _:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+@swagger_auto_schema(method="PATCH", responses={200: UserSerializer()})
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def ban_user(request: Request, user_id: int) -> Response:
+    user_ = User.objects.get(id=user_id)
+    user_.is_active = False
+    user_.save()
+    return Response(UserSerializer(user_).data, status=status.HTTP_200_OK)
