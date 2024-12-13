@@ -47,3 +47,6 @@ def bet_games(request: Request) -> Response:
             )
         case _:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+

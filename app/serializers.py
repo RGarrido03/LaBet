@@ -85,6 +85,7 @@ class GameOddSerializer(serializers.ModelSerializer):
 class BetSerializer(serializers.ModelSerializer):
     game = GameSerializer(read_only=True)
     profit = serializers.ReadOnlyField()
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Bet
