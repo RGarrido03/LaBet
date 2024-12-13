@@ -95,7 +95,9 @@ def change_user_state(request: Request, user_id: int, new_state: bool ) -> Respo
     """
     new_state: True to ban, False to unban
     """
-    user = User.objects.get(id=user_id)
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        return Response(status=status.HTTP_404_NOT_FOUND)
     user.is_active = new_state
     user.save()
     return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
