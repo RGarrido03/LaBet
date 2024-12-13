@@ -43,7 +43,6 @@ urlpatterns = [
         name="knox_logoutall",
     ),
     path("api/bet/me", bet.bet_games, name="bets"),
-
     path("api/bet", bet.get_all_bets, name="get_all_bets"),
     path("api/bet/<int:id>", bet.get_bet_by_id, name="new_bet"),
     path("api/chart/history", chart.chart_history, name="chart_history"),
@@ -55,13 +54,14 @@ urlpatterns = [
     path("api/user", user.new_user, name="user"),
     path("api/user/me", user.user_me, name="user_me"),
     path("api/user/wallet", user.wallet, name="wallet"),
-
     path("api/user", user.get_all_users, name="get_all_users"),
     path("api/user/<int:id>/state", user.change_user_state, name="ban_user"),
-
     path("api/user/<int:id>", user.update_user, name="update_user"),
-
-    path("api/team/<int:team_id>/games", team.list_games_per_team, name="list_games_per_team"),
+    path(
+        "api/team/<int:team_id>/games",
+        team.list_games_per_team,
+        name="list_games_per_team",
+    ),
     path(
         "docs/swagger<format>/",
         schema_view.without_ui(cache_timeout=0),
