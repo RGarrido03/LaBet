@@ -42,7 +42,9 @@ urlpatterns = [
         knox_views.LogoutAllView.as_view(),
         name="knox_logoutall",
     ),
-    path("api/bet", bet.bet_games, name="bets"),
+    path("api/bet/me", bet.bet_games, name="bets"),
+
+    path("api/bet", bet.get_all_bets, name="get_all_bets"),
     path("api/bet/<int:id>", bet.get_bet_by_id, name="new_bet"),
     path("api/chart/history", chart.chart_history, name="chart_history"),
     path("api/chart/month", chart.chart_month, name="chart_month"),
