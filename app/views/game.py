@@ -58,9 +58,14 @@ def game_by_id(request: Request, id: int) -> Response:
             "detail": combination,
             "profit": profit,
             "max_bet": request.user.tier.max_wallet - total_this_month,
-            "" if is_bet else "bet": Bet.objects.filter(user=request.user, game=game).first(),
-            "count_people_betting": count_people_betting
-,
+            "bet": (
+                BetSerializerWithoutNested(
+                    Bet.objects.filter(user=request.user, game=game).first()
+                ).data
+                if is_bet
+                else None
+            ),
+            "count_people_betting": count_people_betting,
         },
         status=status.HTTP_200_OK,
     )

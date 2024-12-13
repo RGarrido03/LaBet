@@ -82,11 +82,17 @@ class GameOddSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class BetSerializer(serializers.ModelSerializer):
-    game = GameSerializer(read_only=True)
+class BetSerializerWithoutNested(serializers.ModelSerializer):
     profit = serializers.ReadOnlyField()
-    user = UserSerializer(read_only=True)
+    home_bet_house = BetHouseSerializer(read_only=True)
+    draw_bet_house = BetHouseSerializer(read_only=True)
+    away_bet_house = BetHouseSerializer(read_only=True)
 
     class Meta:
         model = Bet
         fields = "__all__"
+
+
+class BetSerializer(BetSerializerWithoutNested):
+    game = GameSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
