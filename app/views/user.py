@@ -116,3 +116,11 @@ def update_user(request: Request, user_id: int) -> Response:
         return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
     serialized.save()
     return Response(serialized.data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(method="GET", responses={200: UserSerializer(many=True)})
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_all_users(request: Request) -> Response:
+    users = User.objects.all()
+    return Response(UserSerializer(users, many=True).data, status=status.HTTP_200_OK)
