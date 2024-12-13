@@ -101,3 +101,18 @@ def change_user_state(request: Request, user_id: int, new_state: bool ) -> Respo
     user.is_active = new_state
     user.save()
     return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(method="PUT", request_body=UserSerializer(), responses={200: UserSerializer()})
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def update_user(request: Request, user_id: int) -> Response:
+    user = User.objects.filter(id=user_id).first()
+    if not user:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    serialized = UserSerializer(user, data=request.data)
+    if not serialized.is_valid():
+        return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+    serialized.save()
+    return Response(serialized.data, status=status.HTTP_200_OK)
