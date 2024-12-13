@@ -91,8 +91,11 @@ def user_me(request: Request) -> Response:
 @swagger_auto_schema(method="PATCH", responses={200: UserSerializer()})
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated, IsAdmin])
-def ban_user(request: Request, user_id: int) -> Response:
-    user_ = User.objects.get(id=user_id)
-    user_.is_active = False
-    user_.save()
-    return Response(UserSerializer(user_).data, status=status.HTTP_200_OK)
+def change_user_state(request: Request, user_id: int, new_state: bool ) -> Response:
+    """
+    new_state: True to ban, False to unban
+    """
+    user = User.objects.get(id=user_id)
+    user.is_active = new_state
+    user.save()
+    return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
