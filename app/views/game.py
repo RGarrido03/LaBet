@@ -78,13 +78,11 @@ def games(request: Request) -> Response:
         bet.game for bet in Bet.objects.filter(user=request.user).all()
     ]
 
+    name_to_filter = request.GET.get("name")
+    odd_to_filter = request.GET.get("odd")
+    filter_type = request.GET.get("filter_type")  # gt or lt
+    sort_way = request.GET.get("sort") # ASC OR DESC
 
-    # check if there is filter or sort or both
-    if request.GET.get("filter"):
-        games = games.filter(name__icontains=request.GET.get("filter"))
-
-    if request.GET.get("sort"):
-        games = games.order_by(request.GET.get("sort"))
 
 
 
@@ -97,5 +95,24 @@ def games(request: Request) -> Response:
         )
         and odds.get("odd") >= request.user.tier.min_arbitrage
     ]
+    # Do the filter thing with the result
+    from pprint import pprint
+    pprint(result)
+
+
+    if name_to_filter:
+        result = [game for game in result if name_to_filter.lower() in game["game"]["home_team"]["name"].lower() or name_to_filter.lower() in game["game"]["away_team"]["name"].lower()]
+
+    if odd_to_filter:
+        if filter_type == "gt":
+            result = [game for game in result if game["detail"]["odd"] > float(odd_to_filter)]
+        elif filter_type == "lt":
+            result = [game for game in result if game["detail"]["odd"] < float(odd_to_filter)]
+
+    if sort_way == "ASC":
+        result = sorted(result, key=lambda x: x["detail"]["odd"])
+    elif sort_way == "DESC":
+        result = sorted(result, key=lambda x: -x["detail"]["odd"])
+
 
     return Response(result, status=status.HTTP_200_OK)
