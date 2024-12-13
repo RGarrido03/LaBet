@@ -22,7 +22,7 @@ from drf_yasg.views import get_schema_view
 from knox import views as knox_views
 from rest_framework import permissions
 
-from app.views import auth, bet, chart, game, user, tier
+from app.views import auth, bet, chart, game, user, tier, team
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -57,9 +57,11 @@ urlpatterns = [
     path("api/user/wallet", user.wallet, name="wallet"),
 
     path("api/user", user.get_all_users, name="get_all_users"),
-    path("api/user/state/<int:id>/<bool:new_state>", user.change_user_state, name="ban_user"),
+    path("api/user/<int:id>/state", user.change_user_state, name="ban_user"),
 
     path("api/user/<int:id>", user.update_user, name="update_user"),
+
+    path("api/team/<int:team_id>/games", team.list_games_per_team, name="list_games_per_team"),
     path(
         "docs/swagger<format>/",
         schema_view.without_ui(cache_timeout=0),
