@@ -55,6 +55,9 @@ def game_by_id(request: Request, id: int) -> Response:
     # if in the get parameter there is a bet keyword, then we will return the bet with that id
     is_bet = request.GET.get("bet", None)
 
+    count_people_betting = Bet.objects.filter(game=game).count()
+
+
 
     return Response(
         {
@@ -62,7 +65,8 @@ def game_by_id(request: Request, id: int) -> Response:
             "detail": combination,
             "profit": profit,
             "max_bet": request.user.tier.max_wallet - total_this_month,
-            "" if is_bet else "bet": Bet.objects.filter(user=request.user, game=game).first()
+            "" if is_bet else "bet": Bet.objects.filter(user=request.user, game=game).first(),
+            "count_people_betting": count_people_betting
 ,
         },
         status=status.HTTP_200_OK,
