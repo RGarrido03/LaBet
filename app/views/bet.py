@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from app.models import Bet
 from app.serializers import BetSerializer
+from app.utils.authorization import IsAdmin
 
 
 @api_view(["GET"])
@@ -50,3 +51,12 @@ def bet_games(request: Request) -> Response:
 
 
 
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_all_bets(request: Request) -> Response:
+    bets = Bet.objects.all()
+    return Response(
+        BetSerializer(bets, many=True).data,
+        status=status.HTTP_200_OK,
+    )
