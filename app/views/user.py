@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from app.models import Bet, Tier, User
 from app.serializers import UserSerializer, UserCreateSerializer
-from app.utils.authorization import IsAdmin
+from app.utils.authorization import IsAdmin, IsAuthenticatedOrNew, IsAdminOrNew
 
 
 @swagger_auto_schema(method="GET", responses={200: "Wallet"})
@@ -40,22 +40,34 @@ def wallet(request: Request) -> Response:
     request_body=UserSerializer,
     responses={201: UserSerializer(), 400: "Already exists", 403: "Too young (18+)"},
 )
-@api_view(["POST"])
+@swagger_auto_schema(method="GET", responses={200: UserSerializer(many=True)})
+@api_view(["POST", "GET"])
+@permission_classes([IsAuthenticatedOrNew, IsAdminOrNew])
 def new_user(request: Request) -> Response:
-    if request.method != "POST":
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    match request.method:
+        case "POST":
+            serialized = UserCreateSerializer(data=request.data)
+            serialized.is_valid(raise_exception=True)
+            tier = request.POST["tier"] if "tier" in request.POST else 1
 
-    serialized = UserCreateSerializer(data=request.data)
-    serialized.is_valid(raise_exception=True)
-    tier = request.POST["tier"] if "tier" in request.POST else 1
+            try:
+                user_ = serialized.save()
+                user_.tier = Tier.objects.get(id=tier)
+                user_.save()
+                return Response(
+                    UserSerializer(user_).data, status=status.HTTP_201_CREATED
+                )
+            except IntegrityError:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        user_ = serialized.save()
-        user_.tier = Tier.objects.get(id=tier)
-        user_.save()
-        return Response(UserSerializer(user_).data, status=status.HTTP_201_CREATED)
-    except IntegrityError:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        case "GET":
+            users = User.objects.all()
+            return Response(
+                UserSerializer(users, many=True).data, status=status.HTTP_200_OK
+            )
+
+        case _:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @swagger_auto_schema(method="GET", responses={200: UserSerializer()})
@@ -91,14 +103,13 @@ def user_me(request: Request) -> Response:
 @swagger_auto_schema(method="PATCH", responses={200: UserSerializer()})
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated, IsAdmin])
-def change_user_state(request: Request, user_id: int ) -> Response:
+def change_user_state(request: Request, user_id: int) -> Response:
     """
     new_state: True to ban, False to unban it comes as query parameter
     """
     new_state = request.GET.get("new_state", None)
     if new_state is None:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
 
     user = User.objects.filter(id=user_id).first()
     if not user:
@@ -108,7 +119,9 @@ def change_user_state(request: Request, user_id: int ) -> Response:
     return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
 
 
-@swagger_auto_schema(method="PUT", request_body=UserSerializer(), responses={200: UserSerializer()})
+@swagger_auto_schema(
+    method="PUT", request_body=UserSerializer(), responses={200: UserSerializer()}
+)
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated, IsAdmin])
 def update_user(request: Request, user_id: int) -> Response:
@@ -121,11 +134,3 @@ def update_user(request: Request, user_id: int) -> Response:
         return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
     serialized.save()
     return Response(serialized.data, status=status.HTTP_200_OK)
-
-
-@swagger_auto_schema(method="GET", responses={200: UserSerializer(many=True)})
-@api_view(["GET"])
-@permission_classes([IsAuthenticated, IsAdmin])
-def get_all_users(request: Request) -> Response:
-    users = User.objects.all()
-    return Response(UserSerializer(users, many=True).data, status=status.HTTP_200_OK)
