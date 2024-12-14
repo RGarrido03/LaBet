@@ -1,10 +1,11 @@
+from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from app.models import Game, Team
-from app.serializers import GameSerializer
+from app.serializers import GameSerializer, TeamSerializer
 
 
 @api_view(["GET"])
@@ -20,3 +21,9 @@ def list_games_per_team(request: Request, team_id: int) -> Response:
 
     serialized_games = GameSerializer(games, many=True)
     return Response(serialized_games.data, status=200)
+
+
+class TeamsView(generics.ListAPIView):
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
+    permission_classes = [IsAuthenticated]

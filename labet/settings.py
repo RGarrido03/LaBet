@@ -158,6 +158,8 @@ Q_CLUSTER_LOG_FILE = BASE_DIR / "logs" / "django_q.log"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ["knox.auth.TokenAuthentication"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_PAGINATION_CLASS": "app.utils.pagination.CustomPageNumberPagination",
+    "PAGE_SIZE": 32,
 }
 
 CORS_ORIGIN_ALLOW_ALL = True

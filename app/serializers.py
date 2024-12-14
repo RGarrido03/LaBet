@@ -56,8 +56,6 @@ class SportSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
-    sport = SportSerializer(read_only=True)
-
     class Meta:
         model = Team
         fields = "__all__"

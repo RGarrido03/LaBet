@@ -58,6 +58,7 @@ urlpatterns = [
     path("api/user/<int:id>/admin", user.change_user_admin, name="user_admin"),
     path("api/user/<int:id>/state", user.change_user_state, name="ban_user"),
     path("api/user/<int:id>/tier", user.change_user_tier, name="changeuser__tier"),
+    path("api/team", team.TeamsView.as_view(), name="get_teams"),
     path(
         "api/team/<int:team_id>/games",
         team.list_games_per_team,
