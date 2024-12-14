@@ -54,8 +54,9 @@ urlpatterns = [
     path("api/user", user.new_user, name="user"),
     path("api/user/me", user.user_me, name="user_me"),
     path("api/user/wallet", user.wallet, name="wallet"),
-    path("api/user/<int:id>/state", user.change_user_state, name="ban_user"),
     path("api/user/<int:id>", user.get_or_update_user, name="update_user"),
+    path("api/user/<int:id>/state", user.change_user_state, name="ban_user"),
+    path("api/user/<int:id>/tier", user.change_user_tier, name="changeuser__tier"),
     path(
         "api/team/<int:team_id>/games",
         team.list_games_per_team,

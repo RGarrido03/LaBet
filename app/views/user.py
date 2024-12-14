@@ -103,7 +103,7 @@ def user_me(request: Request) -> Response:
 @swagger_auto_schema(method="PATCH", responses={200: UserSerializer()})
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated, IsAdmin])
-def change_user_state(request: Request, user_id: int) -> Response:
+def change_user_state(request: Request, id: int) -> Response:
     """
     new_state: True to ban, False to unban it comes as query parameter
     """
@@ -111,7 +111,7 @@ def change_user_state(request: Request, user_id: int) -> Response:
     if new_state is None:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    user = User.objects.filter(id=user_id).first()
+    user = User.objects.filter(id=id).first()
     if not user:
         return Response(status=status.HTTP_404_NOT_FOUND)
     user.is_active = new_state
@@ -146,3 +146,27 @@ def get_or_update_user(request: Request, id: int) -> Response:
 
         case _:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+@swagger_auto_schema(
+    method="PATCH",
+    responses={200: UserSerializer(), 404: "Not found", 400: "Tier ID is required"},
+)
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def change_user_tier(request: Request, id: int) -> Response:
+    tier_id = request.GET.get("tier", None)
+    if tier_id is None:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    tier = Tier.objects.filter(id=tier_id).first()
+    if not tier:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    user = User.objects.filter(id=id).first()
+    if not user:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    user.tier = tier
+    user.save()
+    return Response(UserSerializer(user).data, status=status.HTTP_200_OK)

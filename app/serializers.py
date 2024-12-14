@@ -25,6 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
             "birth_date",
             "iban",
             "is_superuser",
+            "is_active",
         )
 
 
