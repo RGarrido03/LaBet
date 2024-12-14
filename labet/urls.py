@@ -55,6 +55,7 @@ urlpatterns = [
     path("api/user/me", user.user_me, name="user_me"),
     path("api/user/wallet", user.wallet, name="wallet"),
     path("api/user/<int:id>", user.get_or_update_user, name="update_user"),
+    path("api/user/<int:id>/admin", user.change_user_admin, name="user_admin"),
     path("api/user/<int:id>/state", user.change_user_state, name="ban_user"),
     path("api/user/<int:id>/tier", user.change_user_tier, name="changeuser__tier"),
     path(

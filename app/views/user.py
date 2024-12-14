@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from app.models import Bet, Tier, User
 from app.serializers import UserSerializer, UserCreateSerializer
 from app.utils.authorization import IsAdmin, IsAuthenticatedOrNew, IsAdminOrNew
+from app.utils.type_conversion import str_to_bool
 
 
 @swagger_auto_schema(method="GET", responses={200: "Wallet"})
@@ -100,25 +101,32 @@ def user_me(request: Request) -> Response:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-@swagger_auto_schema(method="PATCH", responses={200: UserSerializer()})
-@api_view(["PATCH"])
-@permission_classes([IsAuthenticated, IsAdmin])
-def change_user_state(request: Request, id: int) -> Response:
-    new_state = request.GET.get("new_state", None)
-    match new_state:
-        case "True" | "true" | 1:
-            new_state = True
-        case "False" | "false" | 0:
-            new_state = False
-        case _:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+def change_user_prop(request: Request, id: int, prop: str) -> Response:
+    try:
+        new_state = str_to_bool(request.GET.get("new_state", None))
+    except ValueError:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     user = User.objects.filter(id=id).first()
     if not user:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    user.is_active = new_state
+    setattr(user, prop, new_state)
     user.save()
     return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(method="PATCH", responses={200: UserSerializer()})
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def change_user_state(request: Request, id: int) -> Response:
+    return change_user_prop(request, id, "is_active")
+
+
+@swagger_auto_schema(method="PATCH", responses={200: UserSerializer()})
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated, IsAdmin])
+def change_user_admin(request: Request, id: int) -> Response:
+    return change_user_prop(request, id, "is_superuser")
 
 
 @swagger_auto_schema(method="GET", responses={200: UserSerializer(), 404: "Not found"})
