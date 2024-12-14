@@ -104,12 +104,14 @@ def user_me(request: Request) -> Response:
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated, IsAdmin])
 def change_user_state(request: Request, id: int) -> Response:
-    """
-    new_state: True to ban, False to unban it comes as query parameter
-    """
     new_state = request.GET.get("new_state", None)
-    if new_state is None:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    match new_state:
+        case "True" | "true" | 1:
+            new_state = True
+        case "False" | "false" | 0:
+            new_state = False
+        case _:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
     user = User.objects.filter(id=id).first()
     if not user:
