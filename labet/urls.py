@@ -60,6 +60,11 @@ urlpatterns = [
     path("api/user/<int:id>/tier", user.change_user_tier, name="changeuser__tier"),
     path("api/team", team.TeamsView.as_view(), name="get_teams"),
     path(
+        "api/team/<int:team_id>",
+        team.get_team,
+        name="get_team",
+    ),
+    path(
         "api/team/<int:team_id>/games",
         team.list_games_per_team,
         name="list_games_per_team",

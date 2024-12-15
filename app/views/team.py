@@ -23,6 +23,17 @@ def list_games_per_team(request: Request, team_id: int) -> Response:
     return Response(serialized_games.data, status=200)
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_team(request: Request, team_id) -> Response:
+    team = Team.objects.filter(id=team_id).first()
+    if not team:
+        return Response({"error": "Team not found"}, status=404)
+
+    serialized_team = TeamSerializer(team)
+    return Response(serialized_team.data, status=200)
+
+
 class TeamsView(generics.ListAPIView):
     queryset = Team.objects.order_by("normalized_name").all()
     serializer_class = TeamSerializer
