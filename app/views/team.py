@@ -24,6 +24,6 @@ def list_games_per_team(request: Request, team_id: int) -> Response:
 
 
 class TeamsView(generics.ListAPIView):
-    queryset = Team.objects.all()
+    queryset = Team.objects.order_by("normalized_name").all()
     serializer_class = TeamSerializer
     permission_classes = [IsAuthenticated]
