@@ -12,6 +12,7 @@ from app.serializers import (
     BetSerializerWithoutNested,
 )
 from app.utils.odds import get_best_combination
+from app.utils.pagination import CustomPageNumberPagination
 
 
 @api_view(["GET"])
@@ -74,10 +75,10 @@ def game_by_id(request: Request, id: int) -> Response:
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def games(request: Request) -> Response:
-    games = Game.objects.all()
+    games = Game.objects.filter(date__gte=datetime.datetime.now()).all()
 
     already_bet_games = [
-        bet.game for bet in Bet.objects.filter(user=request.user).all()
+        bet.game for bet in Bet.objects.filter(user=request.user, game__date__gte=datetime.datetime.now()).all()
     ]
 
     name_to_filter = request.GET.get("name")
@@ -89,10 +90,10 @@ def games(request: Request) -> Response:
         {"game": GameSerializer(game).data, "detail": odds}
         for game in games
         if game not in already_bet_games
-        and (
-            odds := get_best_combination(list(GameOdd.objects.filter(game=game).all()))
-        )
-        and odds.get("odd") >= request.user.tier.min_arbitrage
+           and (
+               odds := get_best_combination(list(GameOdd.objects.filter(game=game).all()))
+           )
+           and odds.get("odd") >= request.user.tier.min_arbitrage
     ]
 
     if name_to_filter:
@@ -100,7 +101,7 @@ def games(request: Request) -> Response:
             game
             for game in result
             if name_to_filter.lower() in game["game"]["home_team"]["name"].lower()
-            or name_to_filter.lower() in game["game"]["away_team"]["name"].lower()
+               or name_to_filter.lower() in game["game"]["away_team"]["name"].lower()
         ]
 
     if odd_to_filter:
@@ -118,4 +119,7 @@ def games(request: Request) -> Response:
     elif sort_way == "DESC":
         result = sorted(result, key=lambda x: -x["detail"]["odd"])
 
-    return Response(result, status=status.HTTP_200_OK)
+    paginator = CustomPageNumberPagination()
+    paginated_result = paginator.paginate_queryset(result, request)
+
+    return paginator.get_paginated_response(paginated_result)
