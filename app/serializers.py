@@ -82,15 +82,17 @@ class GameOddSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class BetSerializerWithoutNested(serializers.ModelSerializer):
+class BetBaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bet
+        fields = "__all__"
+
+
+class BetSerializerWithoutNested(BetBaseSerializer):
     profit = serializers.ReadOnlyField()
     home_bet_house = BetHouseSerializer(read_only=True)
     draw_bet_house = BetHouseSerializer(read_only=True)
     away_bet_house = BetHouseSerializer(read_only=True)
-
-    class Meta:
-        model = Bet
-        fields = "__all__"
 
 
 class BetSerializer(BetSerializerWithoutNested):

@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from app.models import Bet
-from app.serializers import BetSerializer
+from app.serializers import BetSerializer, BetBaseSerializer
 from app.utils.authorization import IsAdmin, IsAdminOrReadOnly
 
 
@@ -38,7 +38,7 @@ def bet_games(request: Request) -> Response:
             data = request.data
             data["user"] = request.user.id
 
-            serialized = BetSerializer(data=request.data)
+            serialized = BetBaseSerializer(data=request.data)
             if not serialized.is_valid():
                 return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
