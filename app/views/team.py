@@ -35,6 +35,12 @@ def get_team(request: Request, team_id) -> Response:
 
 
 class TeamsView(generics.ListAPIView):
-    queryset = Team.objects.order_by("normalized_name").all()
     serializer_class = TeamSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Team.objects.order_by("normalized_name").all()
+        name = self.request.query_params.get("name", None)
+        if name is not None:
+            queryset = queryset.filter(name__icontains=name)
+        return queryset
