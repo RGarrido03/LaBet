@@ -15,6 +15,13 @@ class IsAdmin(BasePermission):
         return bool(request.user and request.user.is_superuser)
 
 
+class IsAdminOrReadOnly(IsAdmin):
+    def has_permission(self, request, view):
+        return bool(
+            request.method in ["GET", "HEAD", "OPTIONS"]
+        ) or super().has_permission(request, view)
+
+
 class IsAdminOrNew(IsAdmin):
     @override
     def has_permission(self, request, view):
