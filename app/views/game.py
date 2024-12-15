@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from app.models import *
 from app.serializers import (
     GameSerializer,
+    BetSerializerWithoutNested,
 )
 from app.utils.odds import get_best_combination
 from app.utils.pagination import CustomPageNumberPagination
@@ -51,7 +52,7 @@ def game_by_id(request: Request, id: int) -> Response:
     bet = None
     is_bet = request.GET.get("bet", None)
     if is_bet:
-        bet = Bet.objects.filter(user=request.user, game__bet__id=game.id).first()
+        bet = Bet.objects.filter(user=request.user, game_id=game.id).first()
 
     count_people_betting = Bet.objects.filter(game=game).count()
 
@@ -61,7 +62,7 @@ def game_by_id(request: Request, id: int) -> Response:
             "detail": combination,
             "profit": profit,
             "max_bet": request.user.tier.max_wallet - total_this_month,
-            "bet": bet,
+            "bet": BetSerializerWithoutNested(bet).data if bet else None,
             "count_people_betting": count_people_betting,
         },
         status=status.HTTP_200_OK,
