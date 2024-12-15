@@ -18,9 +18,6 @@ def calculate_arbitrage(home: float, draw: float, away: float) -> float:
 
 
 def get_best_combination(odds: list[GameOdd]) -> dict[str, Any] | None:
-    if len(odds) == 1:
-        return None
-
     home = max(odds, key=lambda x: x.home_odd)
     draw = max(odds, key=lambda x: x.draw_odd)
     away = max(odds, key=lambda x: x.away_odd)
