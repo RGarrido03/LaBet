@@ -6,20 +6,28 @@ from rest_framework.response import Response
 
 from app.models import Bet
 from app.serializers import BetSerializer
-from app.utils.authorization import IsAdmin
+from app.utils.authorization import IsAdmin, IsAdminOrReadOnly
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@api_view(["GET", "DELETE"])
+@permission_classes([IsAuthenticated, IsAdminOrReadOnly])
 def get_bet_by_id(request: Request, id: int) -> Response:
     try:
         bet = Bet.objects.filter(user=request.user, id=id).get()
     except Bet.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    return Response(
-        BetSerializer(bet).data,
-        status=status.HTTP_200_OK,
-    )
+
+    match request.method:
+        case "GET":
+            return Response(
+                BetSerializer(bet).data,
+                status=status.HTTP_200_OK,
+            )
+        case "DELETE":
+            bet.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        case _:
+            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(["POST", "GET"])
@@ -48,8 +56,6 @@ def bet_games(request: Request) -> Response:
             )
         case _:
             return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
 
 
 @api_view(["GET"])
