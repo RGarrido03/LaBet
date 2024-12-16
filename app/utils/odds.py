@@ -10,11 +10,7 @@ def normalize_odds(hodd: float, dodd: float, aodd: float) -> tuple[float, float,
 
 
 def randomize_odd(odd: float) -> float:
-    return odd + random.gauss(0, 0.2)
-
-
-def calculate_arbitrage(home: float, draw: float, away: float) -> float:
-    return 1 / home + 1 / draw + 1 / away
+    return odd + random.gauss(0.2, 0.4)
 
 
 def get_best_combination(odds: list[GameOdd]) -> dict[str, Any] | None:
