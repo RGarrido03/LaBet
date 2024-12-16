@@ -12,18 +12,21 @@ from app.utils.authorization import IsAdmin, IsAdminOrReadOnly
 @api_view(["GET", "DELETE"])
 @permission_classes([IsAuthenticated, IsAdminOrReadOnly])
 def get_bet_by_id(request: Request, id: int) -> Response:
-    try:
-        bet = Bet.objects.filter(user=request.user, id=id).get()
-    except Bet.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
     match request.method:
         case "GET":
+            try:
+                bet = Bet.objects.filter(user=request.user, id=id).get()
+            except Bet.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
             return Response(
                 BetSerializer(bet).data,
                 status=status.HTTP_200_OK,
             )
         case "DELETE":
+            try:
+                bet = Bet.objects.filter(id=id).get()
+            except Bet.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
             bet.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         case _:
