@@ -1,4 +1,8 @@
-from typing import Any, override
+import json
+import re
+from typing import Any
+
+import requests
 
 from app.models import GameOdd
 from app.modules.scrapper import Scrapper
@@ -7,16 +11,14 @@ from app.modules.scrapper import Scrapper
 class BetclicScrapper(Scrapper):
     def __init__(self):
         team_extractor = lambda x, idx: x["contestants"][idx]["name"]
-        odds_extractor = lambda x, idx: x["grouped_markets"][0]["markets"][0][
-            "selections"
-        ][idx][0]["odds"]
+        odds_extractor = lambda x, idx: x["market"]["mainSelections"][idx]["odds"]
         super().__init__(
             "Betclic",
             "https://www.betclic.pt",
             "https://upload.wikimedia.org/wikipedia/commons/f/fe/Logo_Betclic_2019.svg",
             lambda x: team_extractor(x, 0),
             lambda x: team_extractor(x, 1),
-            lambda x: x["date"],
+            lambda x: x["matchDateUtc"],
             lambda x: odds_extractor(x, 0),
             lambda x: odds_extractor(x, 1),
             lambda x: odds_extractor(x, 2),
@@ -24,25 +26,43 @@ class BetclicScrapper(Scrapper):
 
         self.limit = 500
         self.bet_house = self.get_or_create_bet_house()
-        self.url = f"https://offer.cdn.begmedia.com/api/pub/v4/sports/1?application=1024&countrycode=en&hasSwitchMtc=true&language=pt&limit={self.limit}&markettypeId=1365&offset=0&sitecode=ptpt&sortBy=ByLiveRankingPreliveDate"
+        self.url = f"https://www.betclic.pt/futebol-sfootball"
 
     def scrap(self) -> list[GameOdd]:
         """Fetch data from API and parse the response."""
-        data = self.make_request("GET", self.url)
+        data = requests.get(self.url).text
+        match = re.search(
+            r'<script id="ng-state" type="application/json">\s*(.*?)\s*</script>',
+            data,
+            re.DOTALL,
+        )
 
-        if not data or "matches" not in data:
-            self.logger.error("Invalid or empty data.")
+        if not match:
+            self.logger.error("Invalid data.")
+            return []
+
+        dct: dict[str, Any] = json.loads(match.group(1))
+
+        if not dct:
+            self.logger.error("Invalid data.")
+            return []
+
+        idx = None
+        for k, v in dct.items():
+            if not isinstance(v, dict) or "response" not in v:
+                continue
+            if "payload" not in v["response"]:
+                continue
+            if "matches" in v["response"]["payload"]:
+                idx = k
+                break
+
+        if not idx:
+            self.logger.error("Invalid data.")
             return []
 
         return [
-            match for event in data["matches"] if (match := self.parse_event(event))
+            match
+            for event in dct[idx]["response"]["payload"]["matches"]
+            if (match := self.parse_event(event))
         ]
-
-    @override
-    def parse_event(self, event: dict[str, Any]) -> GameOdd | None:
-        """Parse a single event and return a GameOdd object if valid."""
-        if len(event.get("grouped_markets")) < 1:
-            self.logger.info("Skipping event, no grouped markets.")
-            return None
-
-        return super().parse_event(event)
